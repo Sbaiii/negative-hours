@@ -55,7 +55,35 @@ ENTSO-E API ──► pipeline/ (Python) ──► data/raw (Parquet)
 
 ## Run it locally
 
-_Instructions added once the pipeline exists._
+You need [uv](https://docs.astral.sh/uv/) and a free ENTSO-E API token
+(create an account on the [Transparency Platform](https://transparency.entsoe.eu/), then request
+"Restful API access" by email; the token appears in your account settings once approved).
+
+```bash
+git clone https://github.com/Sbaiii/negative-hours.git
+cd negative-hours
+uv sync                       # creates .venv with Python 3.12 and all dependencies
+cp .env.example .env          # then paste your token after ENTSOE_API_KEY=
+```
+
+**Download day-ahead prices** (8 bidding zones, 2019 → today):
+
+```bash
+uv run python -m pipeline.extract                                  # everything
+uv run python -m pipeline.extract --zones ES DE_LU --start-year 2024  # a subset
+uv run python -m pipeline.extract --force                          # re-download existing files
+```
+
+Output is one Parquet file per zone and year:
+
+```
+data/raw/prices/zone=ES/year=2024.parquet
+  ts_utc · zone · price_eur_mwh · resolution_minutes
+```
+
+Timestamps are UTC (period start). `resolution_minutes` is 60 until the market switched to
+15-minute products on 2025-10-01, then 15. Files for past years are skipped if they already
+exist; the current year is always refreshed. A full backfill takes a few minutes.
 
 ---
 
