@@ -6,7 +6,7 @@ Target: **3 weeks** (2026-10-01 → 2026-10-21). One commit minimum every workin
 - [x] Create repo `negative-hours`
 - [x] Scaffold folders, README, .gitignore
 - [x] Create Obsidian vault `control-room`
-- [ ] Publish repo to GitHub (public) & first push
+- [x] Publish repo to GitHub (public) & first push
 - [ ] Register on ENTSO-E Transparency Platform + request API key
 - [ ] Install `uv` on the Mac, open repo in VS Code
 - [ ] Decide bidding zones → [[04 Decisions/Decision Index|decision]]

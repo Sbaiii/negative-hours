@@ -26,5 +26,6 @@ warehouse/logs/
 
 # Obsidian: keep the vault config, ignore personal UI state
 control-room/.obsidian/workspace*.json
+control-room/.obsidian/graph.json
 control-room/.obsidian/cache
 control-room/.trash/
