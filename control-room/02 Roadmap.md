@@ -2,7 +2,7 @@
 
 Target: **3 weeks** (2026-10-01 → 2026-10-21). One commit minimum every working day.
 
-## Phase 0 — Setup (Day 1) ← we are here
+## Phase 0 — Setup (Day 1) ✅
 - [x] Create repo `negative-hours`
 - [x] Scaffold folders, README, .gitignore
 - [x] Create Obsidian vault `control-room`
@@ -12,9 +12,9 @@ Target: **3 weeks** (2026-10-01 → 2026-10-21). One commit minimum every workin
 - [x] Install `uv` on the Mac, open repo in VS Code
 - [x] Decide bidding zones → [[04 Decisions/Decision Index|decision]]
 
-## Phase 1 — Ingestion (Days 2–4)
-- [ ] `pyproject.toml` with dependencies (entsoe-py, pandas, pyarrow, duckdb, python-dotenv)
-- [ ] `pipeline/extract.py`: day-ahead prices per zone, per year → Parquet
+## Phase 1 — Ingestion (Days 2–4) ← we are here
+- [x] `pyproject.toml` with dependencies (entsoe-py, pandas, pyarrow, duckdb, python-dotenv)
+- [x] `pipeline/extract.py`: day-ahead prices per zone, per year → Parquet
 - [ ] Add generation per type (solar, wind) and load
 - [ ] Handle 60-min vs 15-min resolution, DST, missing data
 - [ ] Backfill 2019 → today
