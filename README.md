@@ -66,24 +66,33 @@ uv sync                       # creates .venv with Python 3.12 and all dependenc
 cp .env.example .env          # then paste your token after ENTSOE_API_KEY=
 ```
 
-**Download day-ahead prices** (8 bidding zones, 2019 → today):
+**Download the data** (8 bidding zones, 2019 → today):
 
 ```bash
-uv run python -m pipeline.extract                                  # everything
-uv run python -m pipeline.extract --zones ES DE_LU --start-year 2024  # a subset
-uv run python -m pipeline.extract --force                          # re-download existing files
+uv run python -m pipeline.extract                                      # everything
+uv run python -m pipeline.extract --datasets prices                    # one dataset
+uv run python -m pipeline.extract --zones ES DE_LU --start-year 2024   # a subset
+uv run python -m pipeline.extract --force                              # re-download existing files
 ```
 
-Output is one Parquet file per zone and year:
+| `--datasets` | ENTSO-E source | Columns |
+|---|---|---|
+| `prices` | Day-ahead prices | `ts_utc` · `zone` · `price_eur_mwh` · `resolution_minutes` |
+| `generation` | Actual generation per production type | `ts_utc` · `zone` · `production_type` · `generation_mw` · `resolution_minutes` |
+| `load` | Actual total load | `ts_utc` · `zone` · `load_mw` · `resolution_minutes` |
 
-```
-data/raw/prices/zone=ES/year=2024.parquet
-  ts_utc · zone · price_eur_mwh · resolution_minutes
-```
+Output is one Parquet file per dataset, zone and year, e.g.
+`data/raw/generation/zone=ES/year=2024.parquet`.
 
-Timestamps are UTC (period start). `resolution_minutes` is 60 until the market switched to
-15-minute products on 2025-10-01, then 15. Files for past years are skipped if they already
-exist; the current year is always refreshed. A full backfill takes a few minutes.
+- Timestamps are UTC (start of the period); a "year" is a UTC calendar year.
+- `resolution_minutes` is read from the data, never assumed. Prices are 60 until the market
+  switched to 15-minute products on 2025-10-01, then 15; generation and load vary by zone
+  (and by production type).
+- Generation is in long format (one row per type per period) and keeps only what plants
+  feed in: pumped-storage *consumption* is dropped.
+- Files for past years are skipped if they already exist; the current year is always refreshed.
+- Prices are requested a year at a time, generation and load a month at a time; each
+  request is retried with backoff on rate limits and server errors.
 
 ---
 

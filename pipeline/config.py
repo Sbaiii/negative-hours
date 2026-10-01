@@ -17,7 +17,8 @@ ZONES: dict[str, str] = {
 DEFAULT_START_YEAR = 2019
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
-RAW_PRICES_DIR = REPO_ROOT / "data" / "raw" / "prices"
+# Each dataset is written to RAW_DIR / <dataset> / zone=<ZONE> / year=<YYYY>.parquet
+RAW_DIR = REPO_ROOT / "data" / "raw"
 
 # Retry policy for ENTSO-E API calls: wait 5s, 10s, 20s, 40s between attempts.
 MAX_ATTEMPTS = 5

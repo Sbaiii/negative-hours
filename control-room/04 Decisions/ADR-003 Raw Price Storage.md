@@ -25,3 +25,9 @@ Option 2. Files live at `data/raw/prices/zone=<ZONE>/year=<YYYY>.parquet`, with 
 ## Consequences
 - Local-time analyses (e.g. "hours in 2024, Spanish time") must read neighbouring year files; handle that in dbt, not in raw.
 - Gaps show up as missing timestamps, so data quality checks in dbt must test for completeness.
+
+## Update 2026-10-01: generation and load
+The same layout and rules now apply to `data/raw/generation/` and `data/raw/load/`.
+- Generation is stored **long** (zone × production_type × period) and keeps only "Actual Aggregated"; consumption columns (pumped storage pumping) are dropped. Net pumped-storage flows can't be rebuilt from raw; re-extract if that's ever needed.
+- Generation resolution is inferred **per production type**, because types within one zone can report at different intervals.
+- Generation and load are fetched a month at a time (the ENTSO-E limit) with retries per month, so one failed request doesn't redo the whole year.
