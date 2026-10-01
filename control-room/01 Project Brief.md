@@ -20,7 +20,7 @@ Target readers: hiring managers at European utilities, energy traders, battery/E
 | Q4 | When should EVs charge? | Avg price by hour × season × zone | Heatmap + "best window" |
 
 ## Scope
-- **Bidding zones (proposed, see decision pending):** ES, PT, FR, DE_LU, NL, BE, PL, IT_NORD
+- **Bidding zones ([[ADR-002 Bidding Zones]]):** ES, PT, FR, DE_LU, NL, BE, PL, IT_NORD
 - **Period:** 2019-01-01 → latest available (covers pre-crisis, 2022 crisis, renewables surge)
 - **Data:** day-ahead prices, actual generation per type (solar, wind), total load
 
