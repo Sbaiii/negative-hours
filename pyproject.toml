@@ -1,0 +1,19 @@
+[project]
+name = "negative-hours"
+version = "0.1.0"
+description = "Negative-price hours, solar capture prices and battery value in the European day-ahead electricity market."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "duckdb>=1.5.6",
+    "entsoe-py>=0.8.1",
+    "pandas>=3.0.6",
+    "pyarrow>=25.0.1",
+    "python-dotenv>=1.2.4",
+]
+
+[dependency-groups]
+dev = [
+    "ipykernel>=7.4.0",
+    "ruff>=0.16.9",
+]
