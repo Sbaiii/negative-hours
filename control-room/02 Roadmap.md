@@ -17,7 +17,7 @@ Target: **3 weeks** (2026-10-01 → 2026-10-21). One commit minimum every workin
 - [x] `pipeline/extract.py`: day-ahead prices per zone, per year → Parquet
 - [ ] Add generation per type (solar, wind) and load
 - [ ] Handle 60-min vs 15-min resolution, DST, missing data
-- [ ] Backfill 2019 → today
+- [x] Backfill 2019 → today: prices done for all 8 zones (generation/load backfill running overnight)
 - [ ] Data quality notes in [[03 Data/Data Dictionary]]
 
 ## Phase 2 — Warehouse (Days 5–7)
