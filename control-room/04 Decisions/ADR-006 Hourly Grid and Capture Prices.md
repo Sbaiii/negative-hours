@@ -17,7 +17,7 @@ Option 3, in `int_energy_hourly` (one row per zone × UTC hour):
 - **Matched hours only:** an hour is kept if it has both a price and some generation. Coverage columns record how much of each hour was reported.
 
 In `fct_capture_prices` (zone × local year):
-- `baseload_price` = time-weighted mean price over the matched hours.
+- `baseload_price` = time-weighted mean price over **all** price periods of the zone-year, the same as Q1's `avg_price` (tested). *(Changed 2026-10-03: it was over matched hours only.)*
 - `capture_price` = Σ(price × MWh) / Σ(MWh); `capture_rate` = capture / baseload.
 - `solar_share` = solar MWh / total reported MWh.
 - **Technology coverage rule:** solar (or wind) metrics are null when that series exists in < 95% of matched hours. Only PL 2019–2020 solar is affected (reported from 2020-04-10).
@@ -26,7 +26,7 @@ In `fct_capture_prices` (zone × local year):
 ## Why
 - **One grid for 2019–2026:** an hourly grid treats every year the same way. A 15-min grid would invent sub-hour detail for every hourly year (2019–Sep 2025 prices, hourly generation zones), while native joins would mean a different method per zone and year.
 - **Little lost:** hourly averaging smooths intra-hour price swings since Oct 2025, but a capture price is a yearly weighted average and the effect is small; it is the same for every zone.
-- **Matched hours** keep the capture rate's numerator and denominator on the same hours. In full years `baseload_price` equals Q1's `avg_price` to the cent.
+- **Matched hours** for capture prices: generation is only known there. **All hours** for baseload: "the average price" should mean the same in Q1 and Q2. The difference is small: at most 0.49 €/MWh (2026, where generation ends a day before prices); capture rates moved by at most 0.33 points (solar) and 0.59 points (wind).
 - **Checked:** DE_LU 2024 solar capture price 46.23 €/MWh vs the published German solar market value of 4.624 ct/kWh (Netztransparenz).
 
 ## Consequences

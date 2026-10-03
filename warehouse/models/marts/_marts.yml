@@ -84,7 +84,7 @@ models:
         description: Calendar year in the zone's local time.
         data_tests: [not_null]
       - name: baseload_price
-        description: Time-weighted mean day-ahead price over the matched hours, EUR/MWh.
+        description: Time-weighted mean day-ahead price over ALL price periods of the zone-year, EUR/MWh (= fct_negative_hours.avg_price, tested).
         data_tests: [not_null]
       - name: solar_mwh
         description: Solar energy in the year as reported to ENTSO-E, MWh. Null if solar_coverage < 0.95.

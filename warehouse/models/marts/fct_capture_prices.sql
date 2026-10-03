@@ -7,6 +7,18 @@ with hours as (
     select * from {{ ref('int_energy_hourly') }}
 ),
 
+-- Baseload = time-weighted mean over ALL price periods of the zone-year, the same
+-- definition as fct_negative_hours.avg_price (tested). Capture prices below use
+-- only the matched hours, where generation is known.
+baseload as (
+    select
+        zone,
+        local_year,
+        sum(price_eur_mwh * duration_h) / sum(duration_h) as baseload_price
+    from {{ ref('int_prices_local') }}
+    group by zone, local_year
+),
+
 zone_years as (
     select * from {{ ref('int_zone_years') }}
 ),
@@ -16,9 +28,6 @@ by_year as (
         zone,
         local_year,
         count(*) as matched_hours,
-        -- Time-weighted mean over the matched hours (each hour weighted by the
-        -- share of it that has a price).
-        sum(price_eur_mwh * price_hours_covered) / sum(price_hours_covered) as baseload_price,
 
         sum(solar_mwh) as solar_mwh,
         sum(price_eur_mwh * solar_mwh) / nullif(sum(solar_mwh), 0) as solar_capture_price,
@@ -41,6 +50,7 @@ metrics as (
         solar_coverage >= 0.95 as solar_ok,
         wind_coverage >= 0.95 as wind_ok
     from by_year
+    inner join baseload using (zone, local_year)
 )
 
 select

@@ -10,13 +10,13 @@ In 2025, a MWh of solar earned only 51 to 59% of the average day-ahead price in 
 
 | Zone | Capture rate 2019 | Capture rate 2025 | Solar capture price 2025 (€/MWh) | Baseload 2025 (€/MWh) | 2026 YTD |
 |---|---:|---:|---:|---:|---:|
-| BE | 92.1% | 51.4% | 42.46 | 82.57 | 55.7% |
-| DE_LU | 92.7% | 51.6% | 46.06 | 89.32 | 52.9% |
-| PT | 101.9% | 53.4% | 35.34 | 66.18 | 50.4% |
-| ES | 101.8% | 55.2% | 36.18 | 65.51 | 51.7% |
-| FR | 95.7% | 59.1% | 36.06 | 61.07 | 55.0% |
-| NL* | 94.2% | 61.5% | 53.42 | 86.81 | 60.2% |
-| PL | 94.2% (2021) | 64.5% | 67.27 | 104.29 | 59.7% |
+| BE | 92.1% | 51.4% | 42.46 | 82.57 | 55.6% |
+| DE_LU | 92.7% | 51.6% | 46.06 | 89.32 | 52.8% |
+| PT | 101.9% | 53.4% | 35.34 | 66.18 | 50.1% |
+| ES | 101.9% | 55.4% | 36.18 | 65.29 | 51.4% |
+| FR | 95.7% | 59.1% | 36.06 | 61.07 | 54.9% |
+| NL* | 94.2% | 61.5% | 53.42 | 86.81 | 60.0% |
+| PL | 94.2% (2021) | 64.5% | 67.27 | 104.29 | 59.5% |
 | IT_NORD | 98.6% | 81.9% | 94.92 | 115.86 | 84.9% |
 
 \*NL: ENTSO-E's solar series covers ~2% of Dutch output; indicative only. PL: solar reported from April 2020, first full year 2021.
@@ -25,7 +25,7 @@ In 2025, a MWh of solar earned only 51 to 59% of the average day-ahead price in 
 - North Italy is the outlier: 81.9% in 2025, the only zone above 65%.
 
 ## Method
-`fct_capture_prices` (dbt): capture price = Σ(hourly price × solar MWh) / Σ(solar MWh) on an hourly grid; rate = capture / time-weighted baseload ([[04 Decisions/ADR-006 Hourly Grid and Capture Prices|ADR-006]]). Notebook `analysis/q2_capture_prices.ipynb`, chart 1.
+`fct_capture_prices` (dbt): capture price = Σ(hourly price × solar MWh) / Σ(solar MWh) on an hourly grid; rate = capture / time-weighted baseload over all price hours (= Q1 `avg_price`) ([[04 Decisions/ADR-006 Hourly Grid and Capture Prices|ADR-006]]). Notebook `analysis/q2_capture_prices.ipynb`, chart 1.
 **Check:** DE_LU 2024 solar capture price 46.23 €/MWh vs the published German solar market value of 4.624 ct/kWh (Netztransparenz).
 
 ## Caveats
