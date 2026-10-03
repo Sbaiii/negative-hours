@@ -11,6 +11,11 @@ macro-paths: ["macros"]
 target-path: "target"
 clean-targets: ["target", "dbt_packages"]
 
+vars:
+  # Start of the first PL day-ahead prices in EUR (Poland joined European market
+  # coupling on delivery day 2019-11-20, CET). Earlier PL prices on ENTSO-E are in PLN.
+  pl_eur_prices_start_utc: "2019-11-19 23:00:00+00"
+
 models:
   negative_hours:
     staging:

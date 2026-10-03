@@ -11,6 +11,9 @@ models:
       - expression_is_true:
           arguments:
             expression: "negative_hours <= zero_or_negative_hours and zero_or_negative_hours <= covered_hours"
+      - expression_is_true:
+          arguments:
+            expression: "is_partial_year = (partial_reason is not null)"
     columns:
       - name: zone
         description: Bidding zone code.
@@ -45,4 +48,16 @@ models:
       - name: avg_price_negative_periods
         description: Duration-weighted average price over negative-price periods only, EUR/MWh. Null if none.
       - name: is_partial_year
-        description: True for the current (incomplete) year.
+        description: >
+          True when the year is not a full year of data: the current year, or
+          completeness below 0.98. Compare zones on full years only (ADR-005).
+        data_tests: [not_null]
+      - name: partial_reason
+        description: >
+          Why the year is partial: 'current_year' (year to date) or
+          'pln_prices_excluded' (PL before 2019-11-20: prices in PLN, left out).
+          Null for full years.
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['current_year', 'pln_prices_excluded']
