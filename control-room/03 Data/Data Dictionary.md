@@ -51,6 +51,8 @@ Source: `query_load` (process type A16, realised). File: `data/raw/load/zone=<ZO
 | `int_energy_hourly` | intermediate (table) | zone × hour_utc | Hourly price (duration-weighted) + solar / wind / total generation MWh, matched hours only (ADR-006) |
 | `fct_negative_hours` | mart (table) | zone × local_year | Q1 metrics, see below. Exported to `analysis/outputs/fct_negative_hours.csv` |
 | `fct_capture_prices` | mart (table) | zone × local_year | Q2 metrics, see below. Exported to `analysis/outputs/fct_capture_prices.csv` |
+| `battery.arbitrage_daily` | source (table, written by `models/run_battery.py`) | zone × local_date × battery_duration_h | Daily optimal (LP) and heuristic schedule results for a 1 MW battery (ADR-007). Incomplete price days skipped |
+| `fct_battery_arbitrage` | mart (table) | zone × local_year × battery_duration_h | Q3 metrics, see below. Exported to `analysis/outputs/fct_battery_arbitrage.csv` |
 | `fct_solar_monthly` | mart (table) | zone × local_month | Monthly baseload (all price periods), solar MWh and capture price; used to split annual capture rates into seasonal and within-month parts |
 
 ### fct_negative_hours
@@ -96,6 +98,25 @@ Definitions: [[04 Decisions/ADR-006 Hourly Grid and Capture Prices|ADR-006]].
 | others | | not checked against national statistics | Use with the label "as reported" |
 
 Capture *rates* are less exposed than shares: they depend on the shape of the solar profile, not its size. But a series that covers 2% of a country's panels may not have the national shape.
+
+### fct_battery_arbitrage
+| Column | Type | Description |
+|---|---|---|
+| zone, local_year, battery_duration_h | | Key (duration 1, 2 or 4 h; power 1 MW) |
+| revenue_eur_per_mw | double | Σ daily optimal day-ahead revenue, € per MW (year to date for the current year) |
+| avg_daily_revenue_eur_per_mw | double | revenue / days_solved |
+| avg_spread_captured_eur_mwh | double | Energy-weighted avg sell price − avg buy price, €/MWh (before losses) |
+| avg_sell_price / avg_buy_price | double | €/MWh; the buy price can be negative |
+| cycles / avg_daily_cycles | double | Full equivalent cycles (energy drawn from storage / capacity); ≤ 1 per day |
+| charged_negative_mwh | double | Energy bought at negative prices, MWh per MW |
+| negative_charging_revenue_eur | double | Money received for charging at negative prices, € per MW |
+| negative_revenue_share | double | negative_charging_revenue_eur / revenue_eur_per_mw |
+| heuristic_revenue_eur_per_mw | double | Cheapest-N / dearest-N rule, € per MW |
+| lp_uplift | double | LP revenue / heuristic revenue − 1 |
+| days_solved, expected_hours, coverage | | Complete days solved; coverage = their hours / expected hours |
+| is_partial_year, partial_reason | | Same rule as the other marts (`int_zone_years`) |
+
+Perfect foresight on cleared day-ahead prices, 1 cycle a day, 88% round trip: an **upper bound for day-ahead arbitrage only** (no intraday, balancing, capacity markets, degradation or grid fees). Definitions: [[04 Decisions/ADR-007 Battery Arbitrage Model|ADR-007]].
 
 ## Data quality log
 | Date found | Zone | Issue | How handled |
