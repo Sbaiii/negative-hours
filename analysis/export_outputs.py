@@ -18,6 +18,7 @@ EXPORTS = {
     "fct_capture_prices": "zone, local_year",
     "fct_battery_arbitrage": "zone, local_year, battery_duration_h",
     "fct_hourly_profile": "zone, local_year, season, local_hour",
+    "fct_ev_charging": "zone, local_year, season",
 }
 
 

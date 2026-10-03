@@ -306,3 +306,62 @@ models:
       - name: partial_reason
         description: "'current_year' / 'pln_prices_excluded' / null."
 
+  - name: fct_ev_charging
+    description: >
+      Q4 — wholesale cost of charging an EV 10 kWh a day at 7 kW under three
+      strategies: immediate (start at 18:00), overnight (cheapest block 22:00 to
+      07:00) and smart (cheapest block in the day). One row per zone, local year
+      and season, plus season 'year' for the whole year. Wholesale day-ahead price
+      only: no retail margin, taxes or grid fees (ADR-008).
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [zone, local_year, season]
+      - expression_is_true:
+          arguments:
+            expression: "is_partial_year = (partial_reason is not null)"
+      - expression_is_true:
+          arguments:
+            # The 18:00 block is one of the blocks smart charging chooses from.
+            expression: "smart_eur_per_year <= immediate_eur_per_year + 0.01"
+    columns:
+      - name: zone
+        data_tests: [not_null]
+      - name: local_year
+        data_tests: [not_null]
+      - name: season
+        description: winter / spring / summer / autumn (as in fct_hourly_profile), or 'year' for the whole year.
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['winter', 'spring', 'summer', 'autumn', 'year']
+      - name: days
+        description: Local days with prices for all three strategies.
+        data_tests: [not_null]
+      - name: immediate_eur_per_year
+        description: Wholesale cost of charging at 18:00, EUR per year (average daily cost x 365).
+        data_tests: [not_null]
+      - name: overnight_eur_per_year
+        description: Cheapest continuous block between 22:00 and 07:00, EUR per year.
+        data_tests: [not_null]
+      - name: smart_eur_per_year
+        description: Cheapest continuous block within the local day, EUR per year.
+        data_tests: [not_null]
+      - name: overnight_savings_eur_per_year
+        description: immediate - overnight, EUR per year. Negative when nights cost more than 18:00.
+      - name: smart_savings_eur_per_year
+        description: immediate - smart, EUR per year (never negative, tested).
+      - name: overnight_savings_share
+        description: overnight savings / immediate cost.
+      - name: smart_savings_share
+        description: smart savings / immediate cost. Above 1 when smart charging is paid on balance.
+      - name: immediate_price_eur_mwh
+        description: Average wholesale price paid per MWh, immediate strategy.
+      - name: overnight_price_eur_mwh
+        description: Average wholesale price paid per MWh, overnight strategy.
+      - name: smart_price_eur_mwh
+        description: Average wholesale price paid per MWh, smart strategy.
+      - name: is_partial_year
+        data_tests: [not_null]
+      - name: partial_reason
+        description: "'current_year' / 'pln_prices_excluded' / null."
