@@ -53,6 +53,8 @@ Source: `query_load` (process type A16, realised). File: `data/raw/load/zone=<ZO
 | `fct_capture_prices` | mart (table) | zone × local_year | Q2 metrics, see below. Exported to `analysis/outputs/fct_capture_prices.csv` |
 | `battery.arbitrage_daily` | source (table, written by `models/run_battery.py`) | zone × local_date × battery_duration_h | Daily optimal (LP) and heuristic schedule results for a 1 MW battery (ADR-007). Incomplete price days skipped |
 | `fct_battery_arbitrage` | mart (table) | zone × local_year × battery_duration_h | Q3 metrics, see below. Exported to `analysis/outputs/fct_battery_arbitrage.csv` |
+| `fct_hourly_profile` | mart (table) | zone × local_year × season × local_hour | Q4: mean / median price and share of time ≤ 0 by hour of day and season (ADR-008). Exported |
+| `fct_ev_charging` | mart (table) | zone × local_year × season (+ `year`) | Q4: wholesale cost of 10 kWh/day at 7 kW, immediate (18:00) vs overnight vs smart, € per year and savings (ADR-008). Exported |
 | `fct_solar_monthly` | mart (table) | zone × local_month | Monthly baseload (all price periods), solar MWh and capture price; used to split annual capture rates into seasonal and within-month parts |
 
 ### fct_negative_hours
@@ -117,6 +119,19 @@ Capture *rates* are less exposed than shares: they depend on the shape of the so
 | is_partial_year, partial_reason | | Same rule as the other marts (`int_zone_years`) |
 
 Perfect foresight on cleared day-ahead prices, 1 cycle a day, 88% round trip: an **upper bound for day-ahead arbitrage only** (no intraday, balancing, capacity markets, degradation or grid fees). Definitions: [[04 Decisions/ADR-007 Battery Arbitrage Model|ADR-007]].
+
+### fct_ev_charging
+| Column | Type | Description |
+|---|---|---|
+| zone, local_year, season | | Key; season = winter (Jan, Feb, Dec) / spring / summer / autumn, or `year` |
+| days | int | Local days with prices for all three strategies |
+| immediate / overnight / smart _eur_per_year | double | Wholesale cost, € per year (average daily cost × 365) |
+| overnight / smart _savings_eur_per_year | double | Immediate cost − strategy cost; overnight can be negative |
+| overnight / smart _savings_share | double | Savings / immediate cost |
+| immediate / overnight / smart _price_eur_mwh | double | Average wholesale price paid, €/MWh |
+| is_partial_year, partial_reason | | Same rule as fct_negative_hours |
+
+Wholesale day-ahead component only: no retail margin, taxes or grid fees. Definitions: [[04 Decisions/ADR-008 EV Charging Strategies|ADR-008]].
 
 ## Data quality log
 | Date found | Zone | Issue | How handled |
