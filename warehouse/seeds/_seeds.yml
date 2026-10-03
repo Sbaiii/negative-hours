@@ -1,0 +1,14 @@
+seeds:
+  - name: zones
+    description: The 8 bidding zones in scope (ADR-002) and the time zone used for their local time.
+    columns:
+      - name: zone
+        description: Bidding zone code, as used by ENTSO-E / entsoe-py.
+        data_tests: [unique, not_null]
+      - name: zone_name
+        description: Human-readable zone name.
+      - name: country
+        description: Country (or countries) the zone covers.
+      - name: timezone
+        description: IANA time zone for local time. PT is Europe/Lisbon (WET); all others are CET/CEST.
+        data_tests: [not_null]
