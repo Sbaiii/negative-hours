@@ -1,0 +1,12 @@
+# Kept in the repo (not ~/.dbt) so the project is self-contained.
+# dbt picks this file up when run from the warehouse/ folder.
+negative_hours:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: ../data/warehouse.duckdb
+      threads: 4
+      settings:
+        # All timestamps are UTC; local time is derived explicitly per zone.
+        TimeZone: UTC

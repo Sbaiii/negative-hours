@@ -1,0 +1,30 @@
+name: negative_hours
+version: "1.0.0"
+profile: negative_hours
+
+# Run dbt from this folder (cd warehouse): profiles.yml and the relative data paths
+# (../data/...) are resolved from here.
+model-paths: ["models"]
+seed-paths: ["seeds"]
+test-paths: ["tests"]
+macro-paths: ["macros"]
+target-path: "target"
+clean-targets: ["target", "dbt_packages"]
+
+models:
+  negative_hours:
+    staging:
+      +materialized: view
+    intermediate:
+      +materialized: view
+    marts:
+      +materialized: table
+
+seeds:
+  negative_hours:
+    zones:
+      +column_types:
+        zone: varchar
+        zone_name: varchar
+        country: varchar
+        timezone: varchar

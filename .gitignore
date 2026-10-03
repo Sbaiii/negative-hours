@@ -29,3 +29,6 @@ control-room/.obsidian/workspace*.json
 control-room/.obsidian/graph.json
 control-room/.obsidian/cache
 control-room/.trash/
+
+# dbt writes an anonymous user id next to profiles.yml
+warehouse/.user.yml
