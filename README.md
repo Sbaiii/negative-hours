@@ -44,6 +44,7 @@ ENTSO-E API ──► pipeline/ (Python) ──► data/raw (Parquet)
 |--------|------------------|
 | `pipeline/` | Data extraction from the ENTSO-E Transparency Platform |
 | `warehouse/` | dbt project: models, tests, documentation |
+| `models/` | Python models: battery arbitrage linear program (Q3) |
 | `analysis/` | Notebooks answering Q1–Q4 |
 | `dashboard/` | Live dashboard source |
 | `docs/` | Exec memo, figures, methodology |
@@ -77,6 +78,18 @@ Notebook: [`analysis/q1_negative_hours.ipynb`](analysis/q1_negative_hours.ipynb)
 - **Caveat:** generation is *as reported to ENTSO-E*; the Netherlands series misses ~98% of Dutch solar, so NL solar figures are indicative only.
 
 Notebook: [`analysis/q2_capture_prices.ipynb`](analysis/q2_capture_prices.ipynb) · Method: [ADR-006](control-room/04%20Decisions/ADR-006%20Hourly%20Grid%20and%20Capture%20Prices.md)
+
+### Q3 · Where is a battery worth the most?
+
+![Day-ahead arbitrage paid most in Poland in 2025: up to €86k per MW, vs €37k in North Italy](docs/figures/q3_revenue_by_zone_2025.svg)
+
+- **Up to €86k per MW in 2025.** A 1 MW / 2 MWh battery trading the day-ahead market could have earned at most €85.6k per MW in Poland, €76.1k in Germany and the Netherlands, and €36.6k in North Italy. Germany 2024 (€66k) is in line with a published day-ahead-only estimate (~€70k, Gridcog).
+- **2026 is already ahead.** By 3 October, 2026 had out-earned all of 2025 in every zone; 15-minute prices (since Oct 2025) add 2 to 10% of that.
+- **Negative hours are a signal, not the money.** Zones and years with more negative hours earned more (r = 0.76 without 2022), but being paid to charge was at most 11% of a year's revenue.
+- **Longer batteries earn more, less per hour added.** In 2025, 4 hours earned 64 to 76% more than 2 hours.
+- **Caveat:** an upper bound for one market: perfect foresight on cleared day-ahead prices, 1 cycle a day, 88% round trip. Excludes intraday, balancing and capacity markets, degradation, grid fees and all costs. Not investment advice.
+
+Notebook: [`analysis/q3_battery_arbitrage.ipynb`](analysis/q3_battery_arbitrage.ipynb) · Model: [ADR-007](control-room/04%20Decisions/ADR-007%20Battery%20Arbitrage%20Model.md), [`models/battery.py`](models/battery.py)
 
 All findings, with exact numbers and caveats: [`control-room/06 Findings/`](control-room/06%20Findings/)
 
@@ -126,6 +139,10 @@ Output is one Parquet file per dataset, zone and year, e.g.
 ```bash
 cd warehouse
 uv run dbt build            # seed, models and tests → data/warehouse.duckdb
+cd ..
+uv run python -m models.run_battery        # battery LP for every zone-day (~3 min) → battery.arbitrage_daily
+cd warehouse
+uv run dbt build --select fct_battery_arbitrage   # Q3 mart from the LP results
 uv run dbt docs generate    # then `uv run dbt docs serve` to browse model docs
 cd ..
 uv run python analysis/export_outputs.py   # marts → analysis/outputs/*.csv
