@@ -13,6 +13,10 @@ models:
             expression: "negative_hours <= zero_or_negative_hours and zero_or_negative_hours <= covered_hours"
       - expression_is_true:
           arguments:
+            # Before the 15-min switch every period is an hour: the two counts match.
+            expression: "local_year >= 2025 or negative_hours = negative_hours_hourly_avg"
+      - expression_is_true:
+          arguments:
             expression: "is_partial_year = (partial_reason is not null)"
     columns:
       - name: zone
@@ -22,7 +26,13 @@ models:
         description: Calendar year in the zone's local time.
         data_tests: [not_null]
       - name: negative_hours
-        description: Hours with a day-ahead price strictly below 0 EUR/MWh.
+        description: Hours with a day-ahead price strictly below 0 EUR/MWh (summed period durations; the headline metric).
+        data_tests: [not_null]
+      - name: negative_hours_hourly_avg
+        description: >
+          Hours whose hourly MEAN price is below 0, for comparison with hourly-only
+          sources. Equal to negative_hours before the 15-min switch (2025-10-01);
+          after it, a quarter-hour can be negative inside a positive hour (ADR-005).
         data_tests: [not_null]
       - name: zero_or_negative_hours
         description: Hours with a price at or below 0 EUR/MWh (includes exactly-zero prices, common in Iberia).
@@ -61,11 +71,15 @@ models:
           - accepted_values:
               arguments:
                 values: ['current_year', 'pln_prices_excluded']
+      - name: data_through_date
+        description: Last day the row covers (31 December, or the as-of date for the current year, the same for every zone).
+        data_tests: [not_null]
 
   - name: fct_capture_prices
     description: >
       Q2 — solar and wind capture prices. One row per zone and local calendar year,
-      from the hourly grid in int_energy_hourly (ADR-006). Capture price =
+      from generation periods matched to the prices over the same span
+      (int_energy_periods, ADR-006). Capture price =
       sum(price x MWh) / sum(MWh); capture rate = capture price / baseload price.
       Generation is **as reported to ENTSO-E**: solar may miss rooftop PV in some
       zones, which affects solar_share more than the capture rate (see Data Dictionary).
@@ -113,9 +127,9 @@ models:
       - name: wind_share
         description: wind_mwh / total_generation_mwh, as reported to ENTSO-E.
       - name: total_generation_mwh
-        description: Energy of all reported production types in the matched hours, MWh.
+        description: Energy of all reported production types in the matched periods, MWh.
       - name: matched_hours
-        description: Hours with both a price and generation.
+        description: Hours of generation periods that have a price.
       - name: expected_hours
         description: Hours in the local year (current year up to the end of the last price period), from int_zone_years.
       - name: coverage
@@ -129,14 +143,17 @@ models:
                 severity: warn
                 where: "not is_partial_year"
       - name: solar_coverage
-        description: Share of matched hours with a Solar row. Solar metrics are null below 0.95.
+        description: Share of the matched time with a Solar row. Solar metrics are null below 0.95.
       - name: wind_coverage
-        description: Share of matched hours with a wind row. Wind metrics are null below 0.95.
+        description: Share of the matched time with a wind row. Wind metrics are null below 0.95.
       - name: is_partial_year
         description: Current year, a known partial reason, or coverage < 0.98 (same rule as fct_negative_hours).
         data_tests: [not_null]
       - name: partial_reason
         description: "'current_year' / 'pln_prices_excluded' / null."
+      - name: data_through_date
+        description: Last day the row covers (31 December, or the as-of date for the current year, the same for every zone).
+        data_tests: [not_null]
 
   - name: fct_solar_monthly
     description: >
@@ -157,13 +174,13 @@ models:
         description: Time-weighted mean price over all price periods of the month, EUR/MWh.
         data_tests: [not_null]
       - name: solar_mwh
-        description: Solar energy in the month, as reported to ENTSO-E, MWh (matched hours).
+        description: Solar energy in the month, as reported to ENTSO-E, MWh (matched periods).
       - name: solar_capture_price
         description: Solar-weighted average price in the month, EUR/MWh.
       - name: solar_capture_rate
         description: Monthly solar capture price / monthly baseload.
       - name: solar_coverage
-        description: Share of the month's matched hours with a Solar row.
+        description: Share of the month's matched time with a Solar row.
 
   - name: fct_battery_arbitrage
     description: >
@@ -252,6 +269,9 @@ models:
         data_tests: [not_null]
       - name: partial_reason
         description: "'current_year' / 'pln_prices_excluded' / null."
+      - name: data_through_date
+        description: Last day the row covers (31 December, or the as-of date for the current year, the same for every zone).
+        data_tests: [not_null]
 
   - name: fct_hourly_profile
     description: >
@@ -305,6 +325,9 @@ models:
         data_tests: [not_null]
       - name: partial_reason
         description: "'current_year' / 'pln_prices_excluded' / null."
+      - name: data_through_date
+        description: Last day the row covers (31 December, or the as-of date for the current year, the same for every zone).
+        data_tests: [not_null]
 
   - name: fct_ev_charging
     description: >
@@ -365,3 +388,6 @@ models:
         data_tests: [not_null]
       - name: partial_reason
         description: "'current_year' / 'pln_prices_excluded' / null."
+      - name: data_through_date
+        description: Last day the row covers (31 December, or the as-of date for the current year, the same for every zone).
+        data_tests: [not_null]
