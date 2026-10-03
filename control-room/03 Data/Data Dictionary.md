@@ -51,6 +51,7 @@ Source: `query_load` (process type A16, realised). File: `data/raw/load/zone=<ZO
 | `int_energy_hourly` | intermediate (table) | zone × hour_utc | Hourly price (duration-weighted) + solar / wind / total generation MWh, matched hours only (ADR-006) |
 | `fct_negative_hours` | mart (table) | zone × local_year | Q1 metrics, see below. Exported to `analysis/outputs/fct_negative_hours.csv` |
 | `fct_capture_prices` | mart (table) | zone × local_year | Q2 metrics, see below. Exported to `analysis/outputs/fct_capture_prices.csv` |
+| `fct_solar_monthly` | mart (table) | zone × local_month | Monthly baseload (all price periods), solar MWh and capture price; used to split annual capture rates into seasonal and within-month parts |
 
 ### fct_negative_hours
 | Column | Type | Description |
@@ -74,7 +75,7 @@ Definitions: [[04 Decisions/ADR-005 Negative Hours Metric|ADR-005]].
 | Column | Type | Description |
 |---|---|---|
 | zone, local_year | | Key |
-| baseload_price | double | Time-weighted mean price over matched hours, EUR/MWh |
+| baseload_price | double | Time-weighted mean price over **all** price periods, EUR/MWh (= `fct_negative_hours.avg_price`, tested) |
 | solar_mwh / wind_mwh | double | Energy in the year, **as reported to ENTSO-E**, MWh (wind = onshore + offshore) |
 | solar_capture_price / wind_capture_price | double | Σ(price × MWh) / Σ(MWh), EUR/MWh |
 | solar_capture_rate / wind_capture_rate | double | Capture price / baseload price |
