@@ -1,5 +1,6 @@
 {
  "generated_on": "2026-10-03",
+ "as_of_date": "2026-10-02",
  "zones": [
   {
    "code": "BE",
@@ -425,7 +426,7 @@
      "first_day": "2026-01-01",
      "last_day": "2026-10-02",
      "negative_hours": 463.25,
-     "solar_capture_rate": 0.5286,
+     "solar_capture_rate": 0.5185,
      "battery_revenue_eur_per_mw": 78911.0,
      "ev_smart_saving_eur": 320.74,
      "ev_smart_saving_share": 0.7903
@@ -434,7 +435,7 @@
      "first_day": "2025-01-01",
      "last_day": "2025-10-02",
      "negative_hours": 525.0,
-     "solar_capture_rate": 0.4798,
+     "solar_capture_rate": 0.4797,
      "battery_revenue_eur_per_mw": 63263.0,
      "ev_smart_saving_eur": 276.37,
      "ev_smart_saving_share": 0.7815
@@ -840,7 +841,7 @@
      "first_day": "2026-01-01",
      "last_day": "2026-10-02",
      "negative_hours": 684.25,
-     "solar_capture_rate": 0.5174,
+     "solar_capture_rate": 0.5067,
      "battery_revenue_eur_per_mw": 62771.0,
      "ev_smart_saving_eur": 142.68,
      "ev_smart_saving_share": 0.7751
@@ -849,7 +850,7 @@
      "first_day": "2025-01-01",
      "last_day": "2025-10-02",
      "negative_hours": 535.0,
-     "solar_capture_rate": 0.5405,
+     "solar_capture_rate": 0.5404,
      "battery_revenue_eur_per_mw": 47697.0,
      "ev_smart_saving_eur": 123.95,
      "ev_smart_saving_share": 0.6712
@@ -1255,7 +1256,7 @@
      "first_day": "2026-01-01",
      "last_day": "2026-10-02",
      "negative_hours": 533.75,
-     "solar_capture_rate": 0.551,
+     "solar_capture_rate": 0.5401,
      "battery_revenue_eur_per_mw": 66218.0,
      "ev_smart_saving_eur": 244.68,
      "ev_smart_saving_share": 0.8259
@@ -1264,7 +1265,7 @@
      "first_day": "2025-01-01",
      "last_day": "2025-10-02",
      "negative_hours": 493.0,
-     "solar_capture_rate": 0.548,
+     "solar_capture_rate": 0.5478,
      "battery_revenue_eur_per_mw": 43704.0,
      "ev_smart_saving_eur": 164.36,
      "ev_smart_saving_share": 0.7363
@@ -1670,7 +1671,7 @@
      "first_day": "2026-01-01",
      "last_day": "2026-10-02",
      "negative_hours": 0.0,
-     "solar_capture_rate": 0.8497,
+     "solar_capture_rate": 0.8457,
      "battery_revenue_eur_per_mw": 40188.0,
      "ev_smart_saving_eur": 198.77,
      "ev_smart_saving_share": 0.4202
@@ -1679,7 +1680,7 @@
      "first_day": "2025-01-01",
      "last_day": "2025-10-02",
      "negative_hours": 0.0,
-     "solar_capture_rate": 0.8028,
+     "solar_capture_rate": 0.8027,
      "battery_revenue_eur_per_mw": 28874.0,
      "ev_smart_saving_eur": 155.4,
      "ev_smart_saving_share": 0.4052
@@ -2085,7 +2086,7 @@
      "first_day": "2026-01-01",
      "last_day": "2026-10-02",
      "negative_hours": 393.0,
-     "solar_capture_rate": 0.6007,
+     "solar_capture_rate": 0.5902,
      "battery_revenue_eur_per_mw": 78382.0,
      "ev_smart_saving_eur": 311.63,
      "ev_smart_saving_share": 0.7789
@@ -2094,7 +2095,7 @@
      "first_day": "2025-01-01",
      "last_day": "2025-10-02",
      "negative_hours": 538.0,
-     "solar_capture_rate": 0.5846,
+     "solar_capture_rate": 0.5844,
      "battery_revenue_eur_per_mw": 63832.0,
      "ev_smart_saving_eur": 273.32,
      "ev_smart_saving_share": 0.8026
@@ -2500,7 +2501,7 @@
      "first_day": "2026-01-01",
      "last_day": "2026-10-02",
      "negative_hours": 301.25,
-     "solar_capture_rate": 0.596,
+     "solar_capture_rate": 0.5882,
      "battery_revenue_eur_per_mw": 87529.0,
      "ev_smart_saving_eur": 356.59,
      "ev_smart_saving_share": 0.7719
