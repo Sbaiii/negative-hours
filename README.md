@@ -94,6 +94,16 @@ Output is one Parquet file per dataset, zone and year, e.g.
 - Prices are requested a year at a time, generation and load a month at a time; each
   request is retried with backoff on rate limits and server errors.
 
+**Build the warehouse** (dbt + DuckDB, run from `warehouse/`):
+
+```bash
+cd warehouse
+uv run dbt build            # seed, models and tests → data/warehouse.duckdb
+uv run dbt docs generate    # then `uv run dbt docs serve` to browse model docs
+cd ..
+uv run python analysis/export_outputs.py   # marts → analysis/outputs/*.csv
+```
+
 ---
 
 Built by [Abdellah Sbai](https://sbaiii.com)

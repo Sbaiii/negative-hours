@@ -12,7 +12,7 @@ Target: **3 weeks** (2026-10-01 → 2026-10-21). One commit minimum every workin
 - [x] Install `uv` on the Mac, open repo in VS Code
 - [x] Decide bidding zones → [[04 Decisions/Decision Index|decision]]
 
-## Phase 1 — Ingestion (Days 2–4) ← we are here
+## Phase 1 — Ingestion (Days 2–4)
 - [x] `pyproject.toml` with dependencies (entsoe-py, pandas, pyarrow, duckdb, python-dotenv)
 - [x] `pipeline/extract.py`: day-ahead prices per zone, per year → Parquet
 - [x] Add generation per type (solar, wind) and load
@@ -20,11 +20,11 @@ Target: **3 weeks** (2026-10-01 → 2026-10-21). One commit minimum every workin
 - [x] Backfill 2019 → today: prices, generation and load for all 8 zones (generation re-fetched for FR, BE, IT_NORD, ES 2022, NL 2019 after the resolution fix)
 - [x] Data quality notes in [[03 Data/Data Dictionary]]
 
-## Phase 2 — Warehouse (Days 5–7)
-- [ ] dbt-duckdb project in `warehouse/`
-- [ ] Staging models (prices, generation, load)
-- [ ] Marts: `fct_prices_hourly`, `fct_negative_hours`, `fct_capture_prices`, `fct_battery_arbitrage`
-- [ ] Tests (not null, unique, accepted ranges) + `dbt docs`
+## Phase 2 — Warehouse (Days 5–7) ← we are here
+- [x] dbt-duckdb project in `warehouse/`
+- [x] Staging models (prices, generation, load)
+- [ ] Marts: `fct_prices_hourly`, `fct_negative_hours` ✅, `fct_capture_prices`, `fct_battery_arbitrage`
+- [x] Tests (not null, unique, accepted ranges) + `dbt docs`
 
 ## Phase 3 — Analysis (Days 8–12)
 - [ ] Q1 Negative hours
