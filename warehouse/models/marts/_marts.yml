@@ -137,3 +137,30 @@ models:
         data_tests: [not_null]
       - name: partial_reason
         description: "'current_year' / 'pln_prices_excluded' / null."
+
+  - name: fct_solar_monthly
+    description: >
+      Solar capture price per zone and local calendar month (same definitions as
+      fct_capture_prices, ADR-006). Built to test where an annual capture rate comes
+      from: how expensive months line up with sunny months.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [zone, local_month]
+    columns:
+      - name: zone
+        data_tests: [not_null]
+      - name: local_month
+        description: First day of the local calendar month.
+        data_tests: [not_null]
+      - name: baseload_price
+        description: Time-weighted mean price over all price periods of the month, EUR/MWh.
+        data_tests: [not_null]
+      - name: solar_mwh
+        description: Solar energy in the month, as reported to ENTSO-E, MWh (matched hours).
+      - name: solar_capture_price
+        description: Solar-weighted average price in the month, EUR/MWh.
+      - name: solar_capture_rate
+        description: Monthly solar capture price / monthly baseload.
+      - name: solar_coverage
+        description: Share of the month's matched hours with a Solar row.
