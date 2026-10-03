@@ -3,7 +3,9 @@
 
 > How often is power free in Europe — and what is a battery worth in each country?
 
-**Status:** 🚧 In progress (started 2026-10-01) · Live dashboard: _coming soon_ · Write-up: _coming soon_
+[![Daily refresh](https://github.com/Sbaiii/negative-hours/actions/workflows/refresh.yml/badge.svg)](https://github.com/Sbaiii/negative-hours/actions/workflows/refresh.yml)
+
+**Status:** 🚧 In progress (started 2026-10-01) · **[Live dashboard](https://sbaiii.github.io/negative-hours/)** (updated daily) · Write-up: _coming soon_
 
 ---
 
@@ -23,19 +25,23 @@ Solar and wind now push European wholesale electricity prices to **zero or below
 ## Architecture
 
 ```
-ENTSO-E API ──► pipeline/ (Python) ──► data/raw (Parquet)
-                                         │
-                                         ▼
-                              warehouse/ (DuckDB + dbt)
-                              staging → intermediate → marts
-                                         │
-                       ┌─────────────────┴─────────────────┐
-                       ▼                                   ▼
-                analysis/ (notebooks)              dashboard/ (live)
-                       │
-                       ▼
-                docs/ (exec memo)
-        Scheduled refresh: GitHub Actions
+            ┌──────────── GitHub Actions, daily 12:30 UTC (refresh.yml) ────────────┐
+            │                                                                       │
+ENTSO-E API ──► pipeline/ (Python) ──► data/raw (Parquet, kept in the Actions cache)
+            │                                │                                      │
+            │                                ▼                                      │
+            │                     warehouse/ (DuckDB + dbt, tests)                  │
+            │                     staging → intermediate → marts                    │
+            │                                │                                      │
+            │                     models/ (battery LP) ──► battery.arbitrage_daily  │
+            │                                │                                      │
+            │               ┌────────────────┴────────────────┐                     │
+            │               ▼                                 ▼                     │
+            │   analysis/outputs/*.csv            dashboard/data/dashboard.json     │
+            │   (committed if changed)            (committed if changed)            │
+            └───────────────────────────────────────────────┬───────────────────────┘
+                                                            ▼
+                    analysis/ (notebooks, docs/figures)   dashboard/ ──► GitHub Pages (pages.yml)
 ```
 
 ## Repo layout
@@ -46,7 +52,8 @@ ENTSO-E API ──► pipeline/ (Python) ──► data/raw (Parquet)
 | `warehouse/` | dbt project: models, tests, documentation |
 | `models/` | Python models: battery arbitrage linear program (Q3) |
 | `analysis/` | Notebooks answering Q1–Q4 |
-| `dashboard/` | Live dashboard source |
+| `dashboard/` | Live dashboard: static page + `build_data.py` (writes `data/dashboard.json`) |
+| `.github/workflows/` | Daily refresh and dashboard deployment ([ADR-009](control-room/04%20Decisions/ADR-009%20Automated%20Daily%20Refresh.md)) |
 | `docs/` | Exec memo, figures, methodology |
 | `control-room/` | Obsidian vault: project brief, roadmap, decision log, daily log |
 
@@ -149,14 +156,21 @@ Output is one Parquet file per dataset, zone and year, e.g.
 
 ```bash
 cd warehouse
-uv run dbt build            # seed, models and tests → data/warehouse.duckdb
+uv run dbt build --exclude source:battery+   # seed, models and tests → data/warehouse.duckdb
 cd ..
-uv run python -m models.run_battery        # battery LP for every zone-day (~3 min) → battery.arbitrage_daily
+uv run python -m models.run_battery          # battery LP for every zone-day (~3 min) → battery.arbitrage_daily
 cd warehouse
-uv run dbt build --select fct_battery_arbitrage   # Q3 mart from the LP results
+uv run dbt build --select source:battery+    # Q3 mart from the LP results
 uv run dbt docs generate    # then `uv run dbt docs serve` to browse model docs
 cd ..
 uv run python analysis/export_outputs.py   # marts → analysis/outputs/*.csv
+uv run python dashboard/build_data.py      # → dashboard/data/dashboard.json
+```
+
+**Preview the dashboard** (it fetches its JSON, so open it through a local server, not as a file):
+
+```bash
+python3 -m http.server 8000 --directory dashboard   # then open http://localhost:8000
 ```
 
 ---

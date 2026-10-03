@@ -20,7 +20,7 @@ Target: **3 weeks** (2026-10-01 → 2026-10-21). One commit minimum every workin
 - [x] Backfill 2019 → today: prices, generation and load for all 8 zones (generation re-fetched for FR, BE, IT_NORD, ES 2022, NL 2019 after the resolution fix)
 - [x] Data quality notes in [[03 Data/Data Dictionary]]
 
-## Phase 2 — Warehouse (Days 5–7) ← we are here
+## Phase 2 — Warehouse (Days 5–7) ✅
 - [x] dbt-duckdb project in `warehouse/`
 - [x] Staging models (prices, generation, load)
 - [x] Marts: `fct_negative_hours` ✅, `fct_capture_prices` ✅, `fct_battery_arbitrage` ✅, `fct_hourly_profile` ✅, `fct_ev_charging` ✅ (~~`fct_prices_hourly`~~ dropped: covered by `int_energy_hourly` and `fct_hourly_profile`)
@@ -33,10 +33,10 @@ Target: **3 weeks** (2026-10-01 → 2026-10-21). One commit minimum every workin
 - [x] Q4 EV charging windows → `fct_hourly_profile`, `fct_ev_charging` (ADR-008), `analysis/q4_ev_charging.ipynb`, 3 charts in `docs/figures/`
 - [ ] One finding note per insight in `06 Findings/` (Q1: 3 notes ✅, Q2: 5 notes ✅, Q3: 4 notes ✅, Q4: 3 notes ✅)
 
-## Phase 4 — Ship (Days 13–16)
-- [ ] Dashboard (live, embedded on sbaiii.com)
-- [ ] GitHub Actions: scheduled refresh
-- [ ] Architecture diagram
+## Phase 4 — Ship (Days 13–16) ← we are here
+- [x] Dashboard: static page in `dashboard/` on GitHub Pages, data rebuilt daily (embed on sbaiii.com still to do)
+- [x] GitHub Actions: scheduled daily refresh + Pages deploy → [[04 Decisions/ADR-009 Automated Daily Refresh|ADR-009]]
+- [x] Architecture diagram (README, with the scheduled refresh)
 
 ## Phase 5 — Story (Days 17–21)
 - [ ] Exec memo (1 page, 3 recommendations)
