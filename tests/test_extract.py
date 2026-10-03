@@ -51,25 +51,26 @@ class FakeClient:
 
     def query_generation(self, zone, start, end):
         self._call()
-        quarters = local_range(start, end, "15min")
+        # Like real ENTSO-E data, every type in a zone reports at the same interval.
         hours = local_range(start, end, "h")
+        every_3_hours = hours[::3]  # a sparse type, e.g. pumped storage
         if start.month == 2:  # one type only: entsoe-py returns a Series
-            return pd.Series(100.0, index=quarters, name="Solar")
+            return pd.Series(100.0, index=hours, name="Solar")
         if start.month == 3:  # a type with consumption: MultiIndex columns
             return pd.DataFrame(
                 {
-                    ("Solar", "Actual Aggregated"): pd.Series(100.0, index=quarters),
+                    ("Solar", "Actual Aggregated"): pd.Series(100.0, index=hours),
                     ("Hydro Pumped Storage", "Actual Aggregated"): pd.Series(
-                        5.0, index=hours
+                        5.0, index=every_3_hours
                     ),
                     ("Hydro Pumped Storage", "Actual Consumption"): pd.Series(
-                        7.0, index=hours
+                        7.0, index=every_3_hours
                     ),
                 }
             )
         return pd.DataFrame(
             {
-                "Solar": pd.Series(100.0, index=quarters),
+                "Solar": pd.Series(100.0, index=hours),
                 "Biomass": pd.Series(10.0, index=hours),
             }
         )
@@ -115,9 +116,9 @@ def test_generation_zone_year():
     assert df.ts_utc.min() == pd.Timestamp("2024-01-01", tz="UTC")
     assert df.ts_utc.max() < pd.Timestamp("2025-01-01", tz="UTC")
     resolution = df.groupby("production_type").resolution_minutes.unique()
-    assert list(resolution["Solar"]) == [15]
+    assert list(resolution["Solar"]) == [60]
     assert list(resolution["Biomass"]) == [60]
-    # Pumped storage only reports in March, yet still reads as hourly.
+    # Pumped storage reports every 3 hours and only in March, yet still reads as hourly.
     assert list(resolution["Hydro Pumped Storage"]) == [60]
 
 

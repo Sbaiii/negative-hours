@@ -26,6 +26,7 @@ log = logging.getLogger("extract")
 # 429 = rate limited; 5xx = server side. Anything else (e.g. 401 bad key) won't fix itself.
 RETRYABLE_STATUS_CODES = {429, 500, 502, 503, 504}
 STANDARD_RESOLUTIONS = (15, 30, 60)
+MIN_ROWS_PER_DAY = 3  # see add_resolution, step 3
 
 
 @dataclass(frozen=True)
@@ -135,9 +136,10 @@ def add_resolution(df: pd.DataFrame, keys: list[str], label: str) -> pd.DataFram
     2. Each UTC day gets its most common spacing, snapped to 15/30/60. Days rather than
        months, because intervals change mid-month (ES load and generation went from
        60 to 15 min on 2022-05-23).
-    3. Days with no usable spacing (a lone point between gaps) borrow the value of the
-       whole zone that day (all types in a zone switch together), then of their own
-       month, then of the zone that month.
+    3. A series needs at least 3 timestamps on a day to set that day's value; with
+       fewer, its one spacing is as likely a gap as the interval. Such days (and days
+       with no usable spacing) borrow the value of the whole zone that day (all types
+       in a zone switch together), then of their own month, then of the zone that month.
     4. If a row's spacing to the next timestamp is a standard interval shorter than its
        day's value, the shorter one wins. This catches switches that happen inside a
        UTC day (day-ahead prices went to 15 min at CET midnight, 22:00 UTC). Gaps
@@ -147,6 +149,7 @@ def add_resolution(df: pd.DataFrame, keys: list[str], label: str) -> pd.DataFram
     df = df.sort_values([*keys, "ts_utc"], ignore_index=True)
     df["_day"] = df["ts_utc"].dt.floor("D")
     df["_month"] = df["ts_utc"].dt.tz_localize(None).dt.to_period("M")
+    rows_that_day = df.groupby([*keys, "_day"])["ts_utc"].transform("size")
 
     to_next = -df.groupby(keys)["ts_utc"].diff(-1).dt.total_seconds() / 60
     from_prev = df.groupby(keys)["ts_utc"].diff().dt.total_seconds() / 60
@@ -156,13 +159,15 @@ def add_resolution(df: pd.DataFrame, keys: list[str], label: str) -> pd.DataFram
     evidence = evidence[evidence["_step"] <= max(STANDARD_RESOLUTIONS)]
 
     resolution = pd.Series(float("nan"), index=df.index)
-    for by in (
-        [*keys, "_day"],
-        ["zone", "_day"],
-        [*keys, "_month"],
-        ["zone", "_month"],
-    ):
-        most_common = evidence.groupby(by, observed=True)["_step"].agg(
+    enough_rows = evidence.index.map(rows_that_day >= MIN_ROWS_PER_DAY)
+    levels = [
+        ([*keys, "_day"], evidence[enough_rows]),
+        (["zone", "_day"], evidence),
+        ([*keys, "_month"], evidence),
+        (["zone", "_month"], evidence),
+    ]
+    for by, source in levels:
+        most_common = source.groupby(by, observed=True)["_step"].agg(
             lambda s: s.mode().min()
         )
         resolution = resolution.fillna(df[by].join(most_common, on=by)["_step"])

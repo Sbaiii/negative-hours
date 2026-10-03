@@ -93,6 +93,23 @@ def test_lone_point_borrows_the_zone_interval_for_that_day():
     assert lone.resolution_minutes.tolist() == [60]
 
 
+def test_one_spacing_on_a_day_does_not_set_the_interval():
+    # IT_NORD storage: a 15-min series whose only point on a new day comes 60 min
+    # after the previous one (3 missing quarters). The zone is 15-min that day.
+    storage = make_table(
+        [
+            *quarter_hourly("2026-10-02 22:00", 4),
+            pd.Timestamp("2026-10-03 00:00", tz="UTC"),
+        ],
+        "Energy storage",
+    )
+    solar = make_table(quarter_hourly("2026-10-02 22:00", 13), "Solar")
+    out = finish_table(
+        pd.concat([storage, solar]), ["zone", "production_type"], "value", "test"
+    )
+    assert set(out[out.production_type == "Energy storage"].resolution_minutes) == {15}
+
+
 def test_duplicate_timestamp_is_dropped_keeping_the_first(caplog):
     df = make_table(hourly("2024-01-01", 4))
     duplicate = df.iloc[[2]].assign(value=999.0)
