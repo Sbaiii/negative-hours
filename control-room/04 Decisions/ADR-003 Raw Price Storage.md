@@ -12,7 +12,7 @@
 
 ## Decision
 Option 2. Files live at `data/raw/prices/zone=<ZONE>/year=<YYYY>.parquet`, with years running 00:00 UTC Jan 1 to 00:00 UTC Jan 1, start inclusive and end exclusive.
-- `resolution_minutes` is inferred per row from the spacing to neighbouring timestamps, not hard-coded from the 2025-10-01 switch date.
+- `resolution_minutes` is inferred per row from the spacing to neighbouring timestamps, not hard-coded from the 2025-10-01 switch date. *(Method replaced by [[ADR-004 Resolution Detection]] on 2026-10-03.)*
 - Missing prices are dropped and logged, not stored as NULL.
 - Past years are skipped if the file exists; the **current year is always re-downloaded**.
 

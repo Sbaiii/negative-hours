@@ -15,10 +15,10 @@ Target: **3 weeks** (2026-10-01 → 2026-10-21). One commit minimum every workin
 ## Phase 1 — Ingestion (Days 2–4) ← we are here
 - [x] `pyproject.toml` with dependencies (entsoe-py, pandas, pyarrow, duckdb, python-dotenv)
 - [x] `pipeline/extract.py`: day-ahead prices per zone, per year → Parquet
-- [ ] Add generation per type (solar, wind) and load
-- [ ] Handle 60-min vs 15-min resolution, DST, missing data
-- [x] Backfill 2019 → today: prices done for all 8 zones (generation/load backfill running overnight)
-- [ ] Data quality notes in [[03 Data/Data Dictionary]]
+- [x] Add generation per type (solar, wind) and load
+- [x] Handle 60-min vs 15-min resolution, DST, missing data → [[04 Decisions/ADR-004 Resolution Detection|ADR-004]]; gaps logged, completeness tests in dbt
+- [x] Backfill 2019 → today: prices, generation and load for all 8 zones (generation re-fetched for FR, BE, IT_NORD, ES 2022, NL 2019 after the resolution fix)
+- [x] Data quality notes in [[03 Data/Data Dictionary]]
 
 ## Phase 2 — Warehouse (Days 5–7)
 - [ ] dbt-duckdb project in `warehouse/`
