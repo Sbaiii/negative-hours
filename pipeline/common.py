@@ -25,7 +25,7 @@ log = logging.getLogger("extract")
 
 # 429 = rate limited; 5xx = server side. Anything else (e.g. 401 bad key) won't fix itself.
 RETRYABLE_STATUS_CODES = {429, 500, 502, 503, 504}
-KNOWN_RESOLUTIONS = {15, 30, 60}
+STANDARD_RESOLUTIONS = (15, 30, 60)
 
 
 @dataclass(frozen=True)
@@ -126,45 +126,103 @@ def to_utc_range[S: (pd.Series, pd.DataFrame)](
     return data[(data.index >= start) & (data.index < end)]
 
 
-def detect_resolution_minutes(index: pd.DatetimeIndex) -> pd.Series:
-    """Length of each period in minutes, inferred from the spacing to its neighbours.
+def add_resolution(df: pd.DataFrame, keys: list[str], label: str) -> pd.DataFrame:
+    """Add resolution_minutes: the interval a series is reported at, never a gap.
 
-    Uses the smaller of the gap to the previous and to the next timestamp, so a single
-    missing period doesn't make its neighbours look like 120-minute periods.
+    `keys` identify one series (["zone"], or ["zone", "production_type"]).
+    1. Spacings between consecutive timestamps of 60 min or less are evidence of the
+       reporting interval; longer spacings are gaps and are ignored.
+    2. Each UTC day gets its most common spacing, snapped to 15/30/60. Days rather than
+       months, because intervals change mid-month (ES load and generation went from
+       60 to 15 min on 2022-05-23).
+    3. Days with no usable spacing (a lone point between gaps) borrow the value of the
+       whole zone that day (all types in a zone switch together), then of their own
+       month, then of the zone that month.
+    4. If a row's spacing to the next timestamp is a standard interval shorter than its
+       day's value, the shorter one wins. This catches switches that happen inside a
+       UTC day (day-ahead prices went to 15 min at CET midnight, 22:00 UTC). Gaps
+       only ever make spacings longer, so they can't trigger it.
+    Missing periods are counted from the gaps and logged.
     """
-    ts = index.to_series()
-    to_prev = ts.diff()
-    to_next = -ts.diff(-1)
-    step = pd.concat([to_prev, to_next], axis=1).min(axis=1)
-    # A lone timestamp has no neighbour; 0 flags it as unknown.
-    return (step.dt.total_seconds().fillna(0) // 60).astype("int16")
+    df = df.sort_values([*keys, "ts_utc"], ignore_index=True)
+    df["_day"] = df["ts_utc"].dt.floor("D")
+    df["_month"] = df["ts_utc"].dt.tz_localize(None).dt.to_period("M")
 
+    to_next = -df.groupby(keys)["ts_utc"].diff(-1).dt.total_seconds() / 60
+    from_prev = df.groupby(keys)["ts_utc"].diff().dt.total_seconds() / 60
+    # Each spacing counts for the rows on both sides of it, so the last row before a
+    # gap (or the end of the file) still has evidence.
+    evidence = pd.concat([df.assign(_step=to_next), df.assign(_step=from_prev)])
+    evidence = evidence[evidence["_step"] <= max(STANDARD_RESOLUTIONS)]
 
-def series_to_table(
-    series: pd.Series, zone: str, value_column: str, label: str
-) -> pd.DataFrame:
-    """Turn a UTC-indexed series into ts_utc, zone, <value_column>, resolution_minutes.
+    resolution = pd.Series(float("nan"), index=df.index)
+    for by in (
+        [*keys, "_day"],
+        ["zone", "_day"],
+        [*keys, "_month"],
+        ["zone", "_month"],
+    ):
+        most_common = evidence.groupby(by, observed=True)["_step"].agg(
+            lambda s: s.mode().min()
+        )
+        resolution = resolution.fillna(df[by].join(most_common, on=by)["_step"])
 
-    Resolution is computed on the series as given, then rows without a value are
-    dropped (and counted in the log as missing periods).
-    """
-    df = pd.DataFrame(
-        {
-            "ts_utc": series.index.astype("datetime64[us, UTC]"),
-            "zone": zone,
-            value_column: series.to_numpy(dtype="float64"),
-            "resolution_minutes": detect_resolution_minutes(series.index).to_numpy(),
-        }
+    unknown = resolution.isna()
+    if unknown.any():
+        log.warning(
+            "%s: %s rows with no way to tell their interval (dropped)",
+            label,
+            unknown.sum(),
+        )
+    resolution = resolution.map(
+        lambda m: min(STANDARD_RESOLUTIONS, key=lambda r: abs(r - m)),
+        na_action="ignore",
     )
-    missing = df[value_column].isna().sum()
-    if missing:
-        log.warning("%s: %s periods with no value (dropped)", label, missing)
-    df = df.dropna(subset=[value_column]).reset_index(drop=True)
+    finer = to_next.isin(STANDARD_RESOLUTIONS) & (to_next < resolution)
+    df["resolution_minutes"] = resolution.mask(finer, to_next)
 
-    unexpected = sorted(set(df["resolution_minutes"]) - KNOWN_RESOLUTIONS)
-    if unexpected:
-        log.warning("%s: unexpected resolutions (minutes): %s", label, unexpected)
-    return df
+    df["_missing"] = (to_next / df["resolution_minutes"]).round() - 1
+    df = df[~unknown]
+    log_gaps(df, keys, label)
+    return df.drop(columns=["_day", "_month", "_missing"]).astype(
+        {"resolution_minutes": "int16"}
+    )
+
+
+def log_gaps(df: pd.DataFrame, keys: list[str], label: str) -> None:
+    """Log how many reporting periods are missing between the first and last row."""
+    missing = df[df["_missing"] > 0].groupby(keys)["_missing"].sum().astype(int)
+    if missing.empty:
+        return
+    if keys == ["zone"]:
+        log.info("%s: %s missing periods (gaps)", label, f"{missing.sum():,}")
+    else:
+        detail = ", ".join(
+            f"{key[-1]} {n:,}"
+            for key, n in missing.sort_values(ascending=False).items()
+        )
+        log.info("%s: missing periods (gaps) by series: %s", label, detail)
+
+
+def finish_table(
+    df: pd.DataFrame, keys: list[str], value_column: str, label: str
+) -> pd.DataFrame:
+    """Shared last step for every dataset: drop empties and duplicates, add resolution.
+
+    `df` has ts_utc (UTC), the `keys` columns and `value_column`.
+    """
+    df = df.dropna(subset=[value_column])
+    duplicated = df.duplicated([*keys, "ts_utc"], keep="first")
+    if duplicated.any():
+        log.warning(
+            "%s: %s duplicate timestamps (kept the first)", label, duplicated.sum()
+        )
+        df = df[~duplicated]
+    df = df.astype({"ts_utc": "datetime64[us, UTC]", value_column: "float64"})
+    df = add_resolution(df, keys, label)
+    return df[["ts_utc", *keys, value_column, "resolution_minutes"]].reset_index(
+        drop=True
+    )
 
 
 def output_path(dataset: str, zone: str, year: int) -> Path:

@@ -14,7 +14,7 @@ import logging
 import pandas as pd
 from entsoe import EntsoePandasClient
 
-from pipeline.common import Dataset, fetch_by_month, series_to_table, to_utc_range
+from pipeline.common import Dataset, fetch_by_month, finish_table, to_utc_range
 
 log = logging.getLogger("extract")
 
@@ -57,36 +57,23 @@ def fetch_generation(
     wide = to_utc_range(pd.concat(frame for frame, _ in months), start, end)
     dropped = set().union(*(d for _, d in months))
 
-    tables = []
-    for production_type in sorted(wide.columns):
-        # NaNs in the wide frame are mostly alignment between types reporting at
-        # different times, so drop them first and read resolution per type.
-        series = wide[production_type].dropna()
-        if series.empty:
-            continue
-        table = series_to_table(
-            series, zone, "generation_mw", label=f"{label} {production_type}"
-        )
-        table.insert(2, "production_type", production_type)
-        tables.append(table)
+    # Long format: one row per type per period. NaNs in the wide frame are just types
+    # not reporting at that timestamp, so they are dropped rather than counted.
+    long = (
+        wide.rename_axis(index="ts_utc", columns="production_type")
+        .stack()
+        .rename("generation_mw")
+        .reset_index()
+    )
+    long.insert(1, "zone", zone)
 
-    types = [t["production_type"].iat[0] for t in tables]
+    types = sorted(long["production_type"].unique())
     log.info("%s: %s production types: %s", label, len(types), ", ".join(types))
     if dropped:
         log.info(
             "%s: dropped consumption columns for: %s", label, ", ".join(sorted(dropped))
         )
-    if not tables:
-        return pd.DataFrame(
-            columns=[
-                "ts_utc",
-                "zone",
-                "production_type",
-                "generation_mw",
-                "resolution_minutes",
-            ]
-        )
-    return pd.concat(tables, ignore_index=True)
+    return finish_table(long, ["zone", "production_type"], "generation_mw", label)
 
 
 GENERATION = Dataset(name="generation", fetch=fetch_generation)
