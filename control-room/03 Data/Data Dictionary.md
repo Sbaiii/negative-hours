@@ -47,7 +47,10 @@ Source: `query_load` (process type A16, realised). File: `data/raw/load/zone=<ZO
 | `stg_load` | staging (view) | zone × ts_utc | Typed raw load |
 | `stg_generation` | staging (view) | zone × production_type × ts_utc | Typed raw generation; drops types never non-zero in a zone (BE Fossil Hard coal; ES Coal-derived gas, Oil shale, Peat, Geothermal, Marine, Wind Offshore; IT_NORD Geothermal; NL Hydro Run-of-river; PL Energy storage) |
 | `int_prices_local` | intermediate (view) | zone × ts_utc | `ts_local`, `local_date`, `local_year`, `duration_h` |
+| `int_zone_years` | intermediate (view) | zone × local_year | Year bounds (local midnight as UTC), `expected_hours`, `known_partial_reason`. Shared by all zone-year marts |
+| `int_energy_hourly` | intermediate (table) | zone × hour_utc | Hourly price (duration-weighted) + solar / wind / total generation MWh, matched hours only (ADR-006) |
 | `fct_negative_hours` | mart (table) | zone × local_year | Q1 metrics, see below. Exported to `analysis/outputs/fct_negative_hours.csv` |
+| `fct_capture_prices` | mart (table) | zone × local_year | Q2 metrics, see below. Exported to `analysis/outputs/fct_capture_prices.csv` |
 
 ### fct_negative_hours
 | Column | Type | Description |
@@ -66,6 +69,32 @@ Source: `query_load` (process type A16, realised). File: `data/raw/load/zone=<ZO
 | partial_reason | text | `current_year` / `pln_prices_excluded` / null (full year). Every partial year must have one (tested) |
 
 Definitions: [[04 Decisions/ADR-005 Negative Hours Metric|ADR-005]].
+
+### fct_capture_prices
+| Column | Type | Description |
+|---|---|---|
+| zone, local_year | | Key |
+| baseload_price | double | Time-weighted mean price over matched hours, EUR/MWh |
+| solar_mwh / wind_mwh | double | Energy in the year, **as reported to ENTSO-E**, MWh (wind = onshore + offshore) |
+| solar_capture_price / wind_capture_price | double | Σ(price × MWh) / Σ(MWh), EUR/MWh |
+| solar_capture_rate / wind_capture_rate | double | Capture price / baseload price |
+| solar_share / wind_share | double | Share of total reported generation (not of consumption) |
+| total_generation_mwh | double | All reported production types, MWh |
+| matched_hours, expected_hours, coverage | | Hours with both price and generation; coverage = matched / expected |
+| solar_coverage / wind_coverage | double | Share of matched hours with that series; metrics are null below 0.95 |
+| is_partial_year, partial_reason | | Same rule as fct_negative_hours (`int_zone_years`) |
+
+Definitions: [[04 Decisions/ADR-006 Hourly Grid and Capture Prices|ADR-006]].
+
+**Caveat: "as reported to ENTSO-E".** ENTSO-E's Solar series is not national solar output everywhere. Order-of-magnitude check, 2024:
+
+| Zone | ENTSO-E Solar | National figure | Verdict |
+|---|---:|---:|---|
+| NL | 0.49 TWh (0.46% of reported generation) | 22 TWh (CBS) | **~2% of real output: NL `solar_share` unusable, capture rate indicative only** |
+| DE_LU | 63.4 TWh (14.45%) | 59.8 TWh net public, 72.2 TWh incl. self-consumption; 14% of public generation (Fraunhofer ISE) | Consistent |
+| others | | not checked against national statistics | Use with the label "as reported" |
+
+Capture *rates* are less exposed than shares: they depend on the shape of the solar profile, not its size. But a series that covers 2% of a country's panels may not have the national shape.
 
 ## Data quality log
 | Date found | Zone | Issue | How handled |
@@ -86,3 +115,7 @@ Definitions: [[04 Decisions/ADR-005 Negative Hours Metric|ADR-005]].
 | 2026-10-03 | 7 CET zones | Local year 2019 is missing its first hour (data starts 2019-01-01 00:00 UTC = 01:00 CET) | Completeness 0.9999; accepted |
 | 2026-10-03 | IT_NORD | No negative prices 2019–2026; zero prices in 2020, 2025, 2026 | Real data, not a gap: report as such in Q1 |
 | 2026-10-03 | ES, PT | No price below 0 before 2024 but many at exactly 0 (ES 2023: 109 h) | Report `zero_or_negative_hours` next to `negative_hours` (ADR-005) |
+| 2026-10-03 | NL | ENTSO-E "Solar" covers ~2% of Dutch solar output (0.49 TWh vs 22 TWh CBS, 2024): mostly missing rooftop/small PV | NL solar_share flagged unusable; NL solar capture rate indicative only; NL left out of the share-based Q2 chart |
+| 2026-10-03 | PL | Solar reported only from 2020-04-10 (none in 2019, 73% of 2020 hours) | PL 2019–2020 solar metrics null (coverage < 0.95, ADR-006) |
+| 2026-10-03 | FR, PT, PL | Wind Offshore appears mid-series (FR 2023-06, PT 2020-06, PL 2026-07): new farms, not gaps | Combined with onshore as `wind` |
+| 2026-10-03 | all | Generation for the current day ends ~1 day before prices (day-ahead prices cover tomorrow) | 2026 coverage 0.993 to 0.997; only matched hours used |
