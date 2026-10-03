@@ -16,6 +16,7 @@ Option 2, in `fct_negative_hours` (one row per zone × local year):
 - `duration_h` = `resolution_minutes` / 60.
 - The year is the **local** calendar year of the period start, in the zone's IANA time zone (seed `zones`).
 - `completeness` = covered hours / hours in the local year (current year: up to the end of the last period). Averages are duration-weighted too.
+- `is_partial_year` = current year **or** completeness < 0.98; `partial_reason` says why (`current_year`, `pln_prices_excluded`). Cross-zone and year-on-year comparisons use full years only.
 
 ## Why
 - **Durations, not rows:** since 2025-10-01 a period is 15 min, so counting rows inflates recent years 4×: ES 2026 has 2,737 negative rows but 684.25 negative hours; DE_LU 2025 has 724 rows vs 574.75 h. Durations make 2019 and 2026 comparable.
@@ -25,5 +26,10 @@ Option 2, in `fct_negative_hours` (one row per zone × local year):
 
 ## Consequences
 - 2019 is 1 hour short in CET zones (data starts 2019-01-01 00:00 UTC = 01:00 CET): completeness 0.9999.
-- PL 2019 only covers 2019-11-20 → 12-31, because earlier PL prices are in PLN (left out in `stg_prices`); its completeness test warns, by design.
+- PL 2019 only covers 2019-11-20 → 12-31, because earlier PL prices are in PLN (see the update below).
 - Tables keyed by local year can't be compared 1:1 with the UTC-year raw files.
+
+## Update 2026-10-03: Polish prices before 2019-11-20
+- **Decision:** keep excluding PL prices before 2019-11-19 23:00 UTC (delivery day 2019-11-20, when Poland joined European market coupling). ENTSO-E publishes them in PLN; we do **not** convert them with FX rates.
+- **Why:** a conversion adds an outside dataset and a choice of rate (daily ECB fix? which hour?) for 10.5 months of one zone, and it can't change the Q1 answer: every PLN price was positive, so PL 2019 has 0 negative hours either way.
+- **Consequence:** PL analysis starts in **2020**. PL 2019 stays in `fct_negative_hours` but only as a partial year (`is_partial_year = true`, `partial_reason = 'pln_prices_excluded'`, completeness 0.12) and is left out of charts and comparisons. The cut-off is one dbt var (`pl_eur_prices_start_utc`) used by both `stg_prices` and the mart.
