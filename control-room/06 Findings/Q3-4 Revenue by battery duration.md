@@ -19,6 +19,8 @@ In 2025, going from a 1-hour to a 2-hour battery raised day-ahead revenue per MW
 | FR | 29,783 | 55,340 | 95,364 | +86% | +72% |
 | IT_NORD | 19,836 | 36,558 | 61,780 | +84% | +69% |
 
+North Italy: GME accepts day-ahead offers only at or above 0 €/MWh, so prices there cannot go negative ([[Q1-3 Share of hours at or below zero 2026|Q1-3]]); its place in this ranking partly reflects that market rule.
+
 Per MWh of storage, a 4-hour battery earned €15,445 (IT_NORD) to €35,084 (PL) per MWh in 2025, against €19,836 to €47,846 for a 1-hour battery.
 
 ## Method

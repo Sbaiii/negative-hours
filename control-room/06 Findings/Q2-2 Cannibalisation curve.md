@@ -3,23 +3,23 @@
 **Question:** Q2 · **Date:** 2026-10-03
 
 ## Headline
-Between 2019 and 2025, solar's share of reported generation rose and its capture rate fell in all 7 zones with usable data; Spain went from 5.9% solar and a 101.9% capture rate to 20.3% and 55.4%.
+Between 2019 and 2025, solar's share of reported generation rose and its capture rate fell in all 7 zones with usable data (the Netherlands left out; Poland from 2021, its first full year of solar data); Spain went from 5.9% solar and a 101.9% capture rate to 20.3% and 55.2%.
 
 ## Evidence
 ![Solar share vs capture rate, per zone](../../docs/figures/q2_cannibalisation_curve.png)
 
 | Zone | First year | Solar share | Capture rate | → 2025 share | 2025 rate |
 |---|---|---:|---:|---:|---:|
-| ES | 2019 | 5.9% | 101.9% | 20.3% | 55.4% |
-| DE_LU | 2019 | 8.0% | 92.7% | 16.9% | 51.6% |
+| ES | 2019 | 5.9% | 101.9% | 20.3% | 55.2% |
+| DE_LU | 2019 | 8.0% | 92.7% | 16.9% | 51.4% |
 | BE | 2019 | 4.0% | 92.1% | 14.8% | 51.4% |
 | PT | 2019 | 2.2% | 101.9% | 12.5% | 53.4% |
-| PL | 2021 | 2.9% | 94.2% | 12.1% | 64.5% |
-| IT_NORD | 2019 | 5.4% | 98.6% | 11.0% | 81.9% |
-| FR | 2019 | 2.2% | 95.7% | 5.7% | 59.1% |
+| PL | 2021 | 2.9% | 94.2% | 12.1% | 64.4% |
+| IT_NORD | 2019 | 5.4% | 98.6% | 11.0% | 81.8% |
+| FR | 2019 | 2.2% | 95.7% | 5.7% | 58.9% |
 
-- **Share alone doesn't set the rate.** At similar shares in 2025, North Italy (11.0%) kept 81.9%, Poland (12.1%) 64.5% and Portugal (12.5%) only 53.4%. France fell to 59.1% at just 5.7% solar.
-- 2026 to date continues the pattern in Spain (25.6% share, 51.4% rate) and Portugal (15.2%, 50.1%).
+- **Share alone doesn't set the rate.** At similar shares in 2025, North Italy (11.0%) kept 81.8%, Poland (12.1%) 64.4% and Portugal (12.5%) only 53.4%. France fell to 58.9% at just 5.7% solar.
+- 2026 to 2 Oct (as-of date) continues the pattern in Spain (25.6% share, 50.7% rate) and Portugal (15.2%, 50.2%).
 
 ## Method
 `fct_capture_prices`: `solar_share` = solar MWh / total reported generation MWh; `solar_capture_rate` as in Q2-1. Notebook chart 2 (one panel per zone, other zones in grey). The Netherlands is left out: ENTSO-E reports 0.49 TWh of Dutch solar in 2024 vs 22 TWh in CBS statistics.

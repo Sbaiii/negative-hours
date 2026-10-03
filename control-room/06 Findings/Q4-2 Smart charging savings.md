@@ -11,7 +11,7 @@ For an EV charging 10 kWh a day at 7 kW, choosing the cheapest block of each day
 | Zone | 18:00 €/yr | Overnight €/yr | Smart €/yr | Smart saving | Share | Price paid 18:00 / smart (€/MWh) |
 |---|---:|---:|---:|---:|---:|---|
 | PL | 547.33 | 325.64 | 179.46 | 367.87 | 67.2% | 149.95 / 49.17 |
-| DE_LU | 469.11 | 284.66 | 131.13 | 337.97 | 72.1% | 128.52 / 35.93 |
+| DE_LU | 469.11 | 284.66 | 131.13 | 337.97 | 72.0% | 128.52 / 35.93 |
 | NL | 451.09 | 275.53 | 118.45 | 332.64 | 73.7% | 123.59 / 32.45 |
 | BE | 415.83 | 261.35 | 115.97 | 299.86 | 72.1% | 113.93 / 31.77 |
 | PT | 347.49 | 230.24 | 95.76 | 251.73 | 72.4% | 95.20 / 26.24 |
@@ -20,7 +20,8 @@ For an EV charging 10 kWh a day at 7 kW, choosing the cheapest block of each day
 | ES | 271.11 | 229.64 | 89.00 | 182.11 | 67.2% | 74.28 / 24.38 |
 
 - In spring 2025, smart charging in **Belgium and the Netherlands was paid on balance**: average price paid −0.29 and −0.22 €/MWh (savings share just over 100%).
-- The smart saving share grew from 22% to 49% in 2019 to 67% to 74% in 2025 (outside IT_NORD), and 74% to 83% in 2026 to date.
+- The smart saving share grew from 22% to 49% in 2019 to 67% to 74% in 2025 (outside IT_NORD), and 74% to 83% in 2026 to 2 Oct (as-of date; snapshot `analysis/outputs/snapshots/2026-10-02/`).
+- North Italy: GME accepts day-ahead offers only at or above 0 €/MWh, so prices there cannot go negative ([[Q1-3 Share of hours at or below zero 2026|Q1-3]]); its place in this ranking partly reflects that market rule. Smart charging there can never be paid to charge, which caps its saving.
 
 ## Method
 `fct_ev_charging`, season `year`: one continuous 1 h 26 min block per day at native price resolution; € per year = average daily cost × 365 ([[04 Decisions/ADR-008 EV Charging Strategies|ADR-008]]). Hand-checked on DE_LU 15 Jun 2024. Notebook chart 3.

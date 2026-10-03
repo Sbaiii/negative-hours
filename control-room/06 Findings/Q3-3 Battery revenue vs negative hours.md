@@ -10,7 +10,7 @@ Across 55 full zone-years (2019 to 2025), revenue of a 2-hour battery correlates
 
 Correlation within each year (8 zones; 7 in 2019): 2019 0.56 · 2020 0.78 · 2021 0.89 · 2022 0.77 · 2023 0.95 · 2024 0.63 · 2025 0.58.
 
-Share of revenue from charging at negative prices (2 h, 2025): BE 6.9% · NL 5.7% · DE_LU 5.0% · FR 3.8% · PL 3.6% · ES 0.7% · PT 0.2% · IT_NORD 0%.
+Share of revenue from charging at negative prices (2 h, 2025): BE 6.9% · NL 5.7% · DE_LU 5.0% · FR 3.8% · PL 3.6% · ES 0.7% · PT 0.2% · IT_NORD 0% (by market rule: no negative prices allowed, see Q1-3).
 
 - 2022: few negative hours (0 to 112) but the highest revenue in 5 zones (NL €114,276).
 - Spain 2025 bought 180.9 MWh per MW at negative prices but earned only 0.7% of its revenue that way: Spanish negative prices are shallow (Q1-2).

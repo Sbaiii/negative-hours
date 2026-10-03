@@ -19,6 +19,7 @@ In 2025, a 1 MW / 2 MWh battery with perfect foresight of day-ahead prices could
 | FR | 55,340 | 151.62 | 84.18 | 44,584 | 24.1% |
 | IT_NORD | 36,558 | 100.16 | 65.19 | 31,949 | 14.4% |
 
+- North Italy: GME accepts day-ahead offers only at or above 0 €/MWh, so prices there cannot go negative ([[Q1-3 Share of hours at or below zero 2026|Q1-3]]); its place in this ranking partly reflects that market rule. A battery there can never be paid to charge.
 - The optimal schedule earns **7.8% to 29.3%** more than the rule of thumb (charge in the cheapest 2 hours, discharge in the dearest 2) across all full zone-years 2019 to 2025; 14.4% to 24.1% in 2025.
 - The battery used about one full cycle every day in 2025 (363.5 to 365 cycles per zone).
 
