@@ -63,13 +63,16 @@ ENTSO-E API ──► pipeline/ (Python) ──► data/raw (Parquet, kept in th
 
 ## Results
 
+2025 and earlier are full years. **2026 figures are as of 2 Oct 2026**, the last day with complete prices and generation in all 8 zones, frozen in [`analysis/outputs/snapshots/2026-10-02/`](analysis/outputs/snapshots/2026-10-02/) (a test checks every quoted 2026 number against it). Current values: the [live dashboard](https://sbaiii.github.io/negative-hours/) and `analysis/outputs/*.csv`.
+
 ### Q1 · How often are prices negative?
 
 ![Negative prices went from rare to routine: 5 of 8 zones topped 500 hours in 2025, up from at most 112 in 2022](docs/figures/q1_negative_hours_by_zone.svg)
 
 - **Rare → routine.** In 2025, 5 of the 8 zones had more than 500 hours of negative day-ahead prices; in 2022 the highest was 112.
 - **Frequency ≠ depth.** Spain had nearly as many negative hours as Germany in 2025 (551.5 vs 574.75), but they averaged −2.11 €/MWh vs −10.92.
-- **North Italy has never gone negative** (2019 to Oct 2026), an open question.
+- **Spain and Portugal split in 2025.** Portugal had 198.5 negative hours to Spain's 551.5, mostly because of May 2025, when imports from Spain were capped after the 28 April blackout (REN, via Bloomberg).
+- **North Italy never goes negative, by rule.** No negative price from 2019 to 2 Oct 2026: GME accepts day-ahead offers only at or above 0 €/MWh ([DTF n. 12 MPE](https://www.mercatoelettrico.org/portals/0/Documents/it-IT/20150220DTF12MPE.pdf)). Its place in rankings partly reflects market design.
 
 Notebook: [`analysis/q1_negative_hours.ipynb`](analysis/q1_negative_hours.ipynb) · Metric: [ADR-005](control-room/04%20Decisions/ADR-005%20Negative%20Hours%20Metric.md)
 
@@ -78,11 +81,11 @@ Notebook: [`analysis/q1_negative_hours.ipynb`](analysis/q1_negative_hours.ipynb)
 ![In 2025 solar earned only 51% to 59% of the average power price in 5 of 8 zones, down from 92% to 102% in 2019](docs/figures/q2_solar_capture_rate_by_zone.svg)
 
 - **Solar earns about half the average price.** In 2025 its capture rate was 51 to 59% in Belgium, Germany, Portugal, Spain and France, down from 92 to 102% in 2019. Germany's 2024 solar capture price (46.23 €/MWh) matches the published German solar market value.
-- **More solar, less value, everywhere.** In all 7 zones with usable data, solar's share rose and its capture rate fell from 2019 to 2025 (Spain: 6% solar at 102% → 20% at 55%).
-- **Wind holds up.** Wind kept 86 to 97% of the average price in 2025.
+- **More solar, less value, everywhere.** In all 7 zones with usable data (the Netherlands left out; Poland from 2021, its first full year of solar data), solar's share rose and its capture rate fell from 2019 to 2025 (Spain: 6% solar at 102% → 20% at 55%).
+- **Wind holds up.** Wind kept 86 to 97% of the average price in 2025 in 7 zones (the Netherlands, 92%, is inside the range and indicative only). North Italy's 102% is left out: wind is 0.3% of its reported generation, too little to compare.
 - **2022 was a timing effect.** Capture rates jumped in 2022 outside Iberia because the most expensive months (July to September) were also the sunniest; in Spain and Portugal prices peaked in January to March and fell after the Iberian gas price cap started (15 June 2022). The within-month erosion kept going every year.
 - **Local or regional?** France's and Belgium's capture rates track the coupled region's solar share as closely as their own; with yearly data the two can't be separated (inconclusive).
-- **Caveat:** generation is *as reported to ENTSO-E*; the Netherlands series misses ~98% of Dutch solar, so NL solar figures are indicative only.
+- **Caveat:** generation is *as reported to ENTSO-E*; the Netherlands series misses ~98% of Dutch solar, so NL solar figures are indicative only. Capture prices match each generation period to the price over the same span (15-min where both are 15-min, from Oct 2025).
 
 Notebook: [`analysis/q2_capture_prices.ipynb`](analysis/q2_capture_prices.ipynb) · Method: [ADR-006](control-room/04%20Decisions/ADR-006%20Hourly%20Grid%20and%20Capture%20Prices.md)
 
@@ -90,9 +93,10 @@ Notebook: [`analysis/q2_capture_prices.ipynb`](analysis/q2_capture_prices.ipynb)
 
 ![Day-ahead arbitrage paid most in Poland in 2025: up to €86k per MW, vs €37k in North Italy](docs/figures/q3_revenue_by_zone_2025.svg)
 
-- **Up to €86k per MW in 2025.** A 1 MW / 2 MWh battery trading the day-ahead market could have earned at most €85.6k per MW in Poland, €76.1k in Germany and the Netherlands, and €36.6k in North Italy. Germany 2024 (€66k) is in line with a published day-ahead-only estimate (~€70k, Gridcog).
-- **2026 is already ahead.** By 3 October, 2026 had out-earned all of 2025 in every zone; 15-minute prices (since Oct 2025) add 2 to 10% of that.
-- **Negative hours are a signal, not the money.** Zones and years with more negative hours earned more (r = 0.76 without 2022), but being paid to charge was at most 11% of a year's revenue.
+- **Up to €86k per MW in 2025.** A 1 MW / 2 MWh battery trading the day-ahead market could have earned at most €85.6k per MW in Poland, €76.1k in Germany and the Netherlands, and €36.6k in North Italy. Germany 2024 (€66k) is the same order of magnitude as a published day-ahead-only estimate (~€70k, Gridcog; its assumptions are not published).
+- **North Italy:** North Italy's day-ahead market accepts no offers below 0 €/MWh (GME rule), so it can never go negative; its place in rankings partly reflects market design.
+- **2026 is ahead at 15-min prices, not like for like.** As of 2 Oct 2026, 2026 had out-earned all of 2025 in every zone at native prices, but on hourly prices (like for like with the hourly years) in only 4 of 8. 15-minute prices add 2 to 10% to 2026; they start on 1 Oct 2025, so the last quarter of 2025 uses them too.
+- **Negative hours are a signal, not the money.** Zones and years with more negative hours earned more: r = 0.40 across all 55 full zone-years, 0.76 without 2022. Both series trend upward over 2019 to 2025, so part of this is a shared time trend, not a link. Being paid to charge was at most 11% of a year's revenue.
 - **Longer batteries earn more, less per hour added.** In 2025, 4 hours earned 64 to 76% more than 2 hours.
 - **Caveat:** an upper bound for one market: perfect foresight on cleared day-ahead prices, 1 cycle a day, 88% round trip. Excludes intraday, balancing and capacity markets, degradation, grid fees and all costs. Not investment advice.
 
@@ -104,7 +108,8 @@ Notebook: [`analysis/q3_battery_arbitrage.ipynb`](analysis/q3_battery_arbitrage.
 
 - **The cheap hours moved to midday.** The cheapest hour of the day started at 03:00 or 04:00 in 2019 in every zone, and at 12:00 to 14:00 in 2025; from March to September 2025 it fell between 12:00 and 16:00 everywhere.
 - **Smart charging cuts the wholesale cost by about 70%.** For 10 kWh a day at 7 kW, charging in the cheapest block of the day instead of at 18:00 saved €182 to €368 a year in 2025 (67% to 74%; North Italy 39%).
-- **"Charge at night" is losing its edge.** Overnight charging got 88% to 100% of the smart saving in 2019, only 23% to 67% in 2025; in Spain it now costs more than charging at 18:00.
+- **"Charge at night" is losing its edge.** Overnight charging got 88% to 100% of the smart saving in 2019, only 23% to 67% in 2025; in Spain it cost more than charging at 18:00 in summer 2025 and in 2026 to 2 Oct.
+- **North Italy:** North Italy's day-ahead market accepts no offers below 0 €/MWh (GME rule), so it can never go negative; its place in rankings partly reflects market design.
 - **Caveat:** wholesale day-ahead price only: retail margins, taxes and grid fees are excluded, so these are not household bills.
 
 Notebook: [`analysis/q4_ev_charging.ipynb`](analysis/q4_ev_charging.ipynb) · Method: [ADR-008](control-room/04%20Decisions/ADR-008%20EV%20Charging%20Strategies.md)
