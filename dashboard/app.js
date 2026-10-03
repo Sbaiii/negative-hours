@@ -82,7 +82,18 @@ function changeText(kpi, current, previous) {
   return `${pct >= 0 ? "+" : "−"}${Math.abs(pct).toFixed(0)}%`;
 }
 
+// Zones whose figures partly reflect a market rule rather than the generation mix.
+const ZONE_NOTES = {
+  IT_NORD:
+    "North Italy: the Italian day-ahead market does not accept offers below 0 €/MWh, so prices " +
+    "cannot go negative. Its negative hours (always 0), battery and EV figures partly reflect " +
+    "that market rule.",
+};
+
 function renderKpis(zone) {
+  const note = document.getElementById("zone-note");
+  note.hidden = !ZONE_NOTES[zone.code];
+  note.textContent = ZONE_NOTES[zone.code] || "";
   const { current, previous } = zone.kpis;
   document.getElementById("kpi-period").textContent =
     `${zone.name}, 1 January to ${fmt.date(current.last_day)}, compared with the same dates in ${previous.last_day.slice(0, 4)}.`;
@@ -209,7 +220,10 @@ function renderAllZones(selected) {
     const c = zone.kpis.current;
     const row = el("tr", zone.code === selected ? { class: "selected" } : {});
     const name = el("td");
-    name.append(el("span", { class: "swatch", style: `background:${zone.color}`, "aria-hidden": "true" }), `${zone.name} (${zone.code})`);
+    name.append(
+      el("span", { class: "swatch", style: `background:${zone.color}`, "aria-hidden": "true" }),
+      `${zone.name} (${zone.code})${ZONE_NOTES[zone.code] ? " *" : ""}`,
+    );
     row.append(
       name,
       el("td", {}, fmt.shortDate(c.last_day)),
@@ -266,6 +280,8 @@ async function main() {
   }
   document.getElementById("updated").textContent = fmt.date(data.generated_on);
   document.getElementById("updated").setAttribute("datetime", data.generated_on);
+  document.getElementById("as-of").textContent = fmt.date(data.as_of_date);
+  document.getElementById("as-of").setAttribute("datetime", data.as_of_date);
 
   const select = document.getElementById("zone-select");
   for (const zone of data.zones) select.append(el("option", { value: zone.code }, `${zone.name} (${zone.code})`));

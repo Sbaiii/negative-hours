@@ -108,6 +108,15 @@ h2 { font-size: 1.2rem; margin: 2rem 0 0.25rem; }
 .tile .compare { font-size: 0.875rem; color: var(--ink-secondary); margin: 0; }
 .tile .note { font-size: 0.8rem; color: var(--ink-muted); margin: 0.4rem 0 0; }
 
+.note-box {
+  margin: 12px 0 0;
+  padding: 0.6rem 0.9rem;
+  border-left: 3px solid var(--axis);
+  background: var(--surface-raised);
+  color: var(--ink-secondary);
+  font-size: 0.9rem;
+}
+
 .chart { margin: 0; }
 .chart svg { display: block; width: 100%; height: auto; }
 .chart figcaption { margin-top: 0.4rem; }

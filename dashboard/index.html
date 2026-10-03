@@ -23,7 +23,7 @@
     <section class="controls" aria-label="Zone">
       <label for="zone-select">Bidding zone</label>
       <select id="zone-select"></select>
-      <p class="updated">Last updated <time id="updated">…</time></p>
+      <p class="updated">Updated <time id="updated">…</time> · data as of <time id="as-of">…</time></p>
     </section>
 
     <p id="status" class="status" role="status"></p>
@@ -32,6 +32,7 @@
       <h2 id="kpi-title">Year to date</h2>
       <p id="kpi-period" class="muted"></p>
       <div id="kpis" class="kpis" aria-live="polite"></div>
+      <p id="zone-note" class="note-box" hidden></p>
     </section>
 
     <section aria-labelledby="curve-title">
@@ -50,6 +51,7 @@
     <section aria-labelledby="all-title">
       <h2 id="all-title">All zones, year to date</h2>
       <div class="table-scroll"><table id="all-zones"></table></div>
+      <p class="muted">* North Italy: the Italian day-ahead market does not accept offers below 0 €/MWh, so prices cannot go negative there. Its negative hours, battery and EV figures partly reflect that market rule, not only renewables.</p>
     </section>
 
     <section aria-labelledby="notebooks-title">
@@ -66,7 +68,8 @@
   <footer class="wrap footer">
     <h2>How to read these numbers</h2>
     <ul>
-      <li><strong>Year to date</strong> runs from 1 January to the last day with complete data for all four figures, and is compared with the same dates last year.</li>
+      <li><strong>Year to date</strong> runs from 1 January to the data's as-of date: the last day on which all 8 zones have complete day-ahead prices and generation, the same for every zone. It is compared with the same dates last year.</li>
+      <li><strong>North Italy</strong> has a 0 €/MWh floor on its day-ahead market (GME rules), so it cannot show negative prices; rankings that include it partly reflect that rule.</li>
       <li><strong>Negative hours:</strong> time with a day-ahead price below 0 (15-minute periods count as a quarter hour).</li>
       <li><strong>Solar capture rate:</strong> what a MWh of solar earned as a share of the average price. Solar output as reported to ENTSO-E; for the Netherlands that covers about 2% of Dutch solar, so its rate is indicative only.</li>
       <li><strong>Battery revenue:</strong> a 1 MW / 2 MWh battery, at most one cycle a day, 88% round trip, with perfect foresight of cleared day-ahead prices. An upper bound for day-ahead arbitrage only: excludes intraday, balancing and capacity markets, degradation and grid fees. Not investment advice.</li>

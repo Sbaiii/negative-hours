@@ -28,30 +28,9 @@ ZONE_COLORS = {  # same as analysis/chart_style.py
     "IT_NORD": "#e34948",
 }
 
-# The last local day on which every KPI has complete data, per zone. Generation
-# (solar) usually lags prices by a day; EV charging needs the next morning's prices.
-AS_OF_SQL = """
-with solar_days as (
-    select e.zone, e.local_date
-    from int_energy_hourly e
-    join zones z using (zone)
-    where e.solar_mwh is not null
-    group by e.zone, e.local_date, z.timezone
-    having count(*) = epoch(
-        timezone(z.timezone, (e.local_date + 1)::timestamp)
-        - timezone(z.timezone, e.local_date::timestamp)) / 3600
-),
-last_days as (
-    select zone, max(local_date) as last_day, 'solar' as source from solar_days group by zone
-    union all
-    select zone, max(local_date), 'battery' from battery.arbitrage_daily group by zone
-    union all
-    select zone, max(local_date), 'ev' from int_ev_charging_daily group by zone
-)
-select zone, min(last_day) as as_of
-from last_days
-group by zone
-"""
+# The run's as-of date (warehouse model int_as_of): the last local day on which
+# every zone has complete prices and generation. All zones use the same window.
+AS_OF_SQL = "select zone, as_of_date as as_of from zones cross join int_as_of"
 
 # One row per zone and window ('current' = 1 Jan to as_of, 'previous' = the same
 # dates a year earlier). Definitions match the marts: ADR-005 to ADR-008.
@@ -79,7 +58,7 @@ solar as (
     select w.zone, w.period,
         sum(e.price_eur_mwh * e.solar_mwh) / nullif(sum(e.solar_mwh), 0) as solar_capture_price
     from windows w
-    join int_energy_hourly e
+    join int_energy_periods e
         on e.zone = w.zone and e.local_date between w.first_day and w.last_day
     group by w.zone, w.period
 ),
@@ -115,14 +94,15 @@ left join ev using (zone, period)
 order by w.zone, w.period
 """
 
-# The latest local day with a complete set of day-ahead prices, per zone. Run after
-# about 12:30 UTC, this is usually tomorrow.
+# The latest local day with a complete set of day-ahead prices, per zone, from all
+# published prices (not cut at the as-of date). Run after about 12:30 UTC, this is
+# usually tomorrow.
 CURVE_SQL = """
 with days as (
     select p.zone, p.local_date, sum(p.duration_h) as hours,
         epoch(timezone(z.timezone, (p.local_date + 1)::timestamp)
               - timezone(z.timezone, p.local_date::timestamp)) / 3600 as day_hours
-    from int_prices_local p
+    from int_prices_published p
     join zones z using (zone)
     group by p.zone, p.local_date, z.timezone
 ),
@@ -131,7 +111,7 @@ latest as (
 )
 select p.zone, p.local_date, strftime(p.ts_local, '%H:%M') as local_time,
     p.resolution_minutes, p.price_eur_mwh
-from int_prices_local p
+from int_prices_published p
 join latest using (zone, local_date)
 order by p.zone, p.ts_utc
 """
@@ -148,10 +128,12 @@ def main() -> None:
         con.execute("set enable_progress_bar = false")
         zones = con.sql("select zone, zone_name from zones order by zone").fetchall()
         kpis = con.sql(KPI_SQL.format(as_of_sql=AS_OF_SQL)).df().to_dict("records")
+        as_of = con.sql("select as_of_date from int_as_of").fetchone()[0]
         curves = con.sql(CURVE_SQL).df()
 
     data = {
         "generated_on": datetime.now(UTC).date().isoformat(),
+        "as_of_date": as_of.isoformat(),
         "zones": [],
     }
     for zone, name in zones:
