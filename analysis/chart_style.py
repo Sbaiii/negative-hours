@@ -79,6 +79,7 @@ def apply_style() -> None:
             "ytick.left": False,
             "lines.linewidth": 2,
             "svg.fonttype": "path",  # text as outlines: the SVG looks the same everywhere
+            "svg.hashsalt": "negative-hours",  # stable element ids: re-runs give identical SVGs
         }
     )
 
@@ -109,6 +110,6 @@ def save(fig, name: str) -> list[Path]:
     """Write docs/figures/<name>.svg and .png; return the paths."""
     FIGURES.mkdir(parents=True, exist_ok=True)
     paths = [FIGURES / f"{name}.svg", FIGURES / f"{name}.png"]
-    fig.savefig(paths[0])
+    fig.savefig(paths[0], metadata={"Date": None})  # no timestamp: identical on re-run
     fig.savefig(paths[1], dpi=200)
     return paths
