@@ -1,0 +1,46 @@
+# Publish dashboard/ to GitHub Pages (Settings > Pages > Source: GitHub Actions).
+# Runs when the dashboard changes, after each daily refresh, or by hand. ADR-009.
+name: Deploy dashboard
+
+on:
+  push:
+    branches: [main]
+    paths: ["dashboard/**"]
+  workflow_call:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      # main, not the triggering commit: after a refresh, main has the new data.
+      - uses: actions/checkout@v5
+        with:
+          ref: main
+
+      - name: Collect the site (page, script, style, data only)
+        run: |
+          mkdir -p _site
+          cp dashboard/index.html dashboard/style.css dashboard/app.js _site/
+          cp -r dashboard/data _site/data
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - id: deployment
+        uses: actions/deploy-pages@v4
