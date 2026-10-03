@@ -31,5 +31,11 @@ In `fct_capture_prices` (zone × local year):
 
 ## Consequences
 - Generation is **as reported to ENTSO-E**. In the Netherlands it misses almost all solar: 0.49 TWh in 2024 vs 22 TWh in national statistics (CBS). NL `solar_share` is not usable and NL capture rates are indicative only (see Data Dictionary).
-- Intra-hour (15-min) price shape after Oct 2025 is not captured; revisit if a question needs it (e.g. battery arbitrage, Q3).
-- `int_energy_hourly` is a table (~536k rows), rebuilt by `dbt build`.
+- Intra-hour (15-min) price shape after Oct 2025 was not captured; fixed by the update below.
+- `int_energy_hourly` was a table (~536k rows); replaced by `int_energy_periods` (update below).
+
+## Update 2026-10-04: match on the generation period (15-min where both are 15-min)
+- **Change.** `int_energy_hourly` is replaced by `int_energy_periods`: one row per zone and **generation period**, with the duration-weighted price over exactly that period. Where both prices and generation are 15-min (DE_LU, ES, FR, IT_NORD, NL, PL since 1 Oct 2025) solar and wind are priced quarter-hour by quarter-hour; where generation is hourly (BE, PT) each hour gets its mean price, as before; where prices are hourly (before Oct 2025) each 15-min generation period gets its hour's price, which gives the same result as the hourly grid. A zone never mixes 15-min and hourly generation within an hour (checked), so periods don't overlap. Prices and energy are exact decimals, so sums are identical on every build.
+- **Why.** Solar output and quarter-hour prices both move within the hour; averaging prices to the hour hid part of the solar discount after the switch.
+- **Measured effect** (same data, native match minus hourly grid, solar capture rate): 2026 to 2 Oct: −1.0 to −1.1 points in DE_LU, ES, FR and NL, −0.8 in PL, −0.4 in IT_NORD, 0 in BE and PT (hourly generation). 2025: −0.1 to −0.2 points (only Oct to Dec is 15-min). Wind: under 0.15 points everywhere. Years before 2025: no change.
+- Coverage columns are now time-weighted (`matched_hours` = hours of generation periods with a price), with the same 95% rule.

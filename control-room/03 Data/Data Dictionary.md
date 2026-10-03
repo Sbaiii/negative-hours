@@ -46,9 +46,11 @@ Source: `query_load` (process type A16, realised). File: `data/raw/load/zone=<ZO
 | `stg_prices` | staging (view) | zone × ts_utc | Typed raw prices. **Leaves out PL before 2019-11-19 23:00 UTC** (prices in PLN; dbt var `pl_eur_prices_start_utc`). PL analysis starts 2020 (ADR-005) |
 | `stg_load` | staging (view) | zone × ts_utc | Typed raw load |
 | `stg_generation` | staging (view) | zone × production_type × ts_utc | Typed raw generation; drops types never non-zero in a zone (BE Fossil Hard coal; ES Coal-derived gas, Oil shale, Peat, Geothermal, Marine, Wind Offshore; IT_NORD Geothermal; NL Hydro Run-of-river; PL Energy storage) |
-| `int_prices_local` | intermediate (view) | zone × ts_utc | `ts_local`, `local_date`, `local_year`, `duration_h` |
+| `int_prices_published` | intermediate (view) | zone × ts_utc | Every published price with `ts_local`, `local_date`, `local_year`, `duration_h` (exact decimals). Runs into tomorrow; only EV overnight charging reads it directly |
+| `int_as_of` | intermediate (table) | one row | The run's **as-of date**: last local day with complete prices and generation in all 8 zones; also `limiting_zone` (ADR-005) |
+| `int_prices_local` | intermediate (view) | zone × ts_utc | `int_prices_published` up to the as-of date: the price table every mart and the battery model read |
 | `int_zone_years` | intermediate (view) | zone × local_year | Year bounds (local midnight as UTC), `expected_hours`, `known_partial_reason`. Shared by all zone-year marts |
-| `int_energy_hourly` | intermediate (table) | zone × hour_utc | Hourly price (duration-weighted) + solar / wind / total generation MWh, matched hours only (ADR-006) |
+| `int_energy_periods` | intermediate (table) | zone × generation period | Solar / wind / total MWh per generation period and the price over exactly that period (15-min match where both are 15-min); replaced `int_energy_hourly` on 2026-10-04 (ADR-006) |
 | `fct_negative_hours` | mart (table) | zone × local_year | Q1 metrics, see below. Exported to `analysis/outputs/fct_negative_hours.csv` |
 | `fct_capture_prices` | mart (table) | zone × local_year | Q2 metrics, see below. Exported to `analysis/outputs/fct_capture_prices.csv` |
 | `battery.arbitrage_daily` | source (table, written by `models/run_battery.py`) | zone × local_date × battery_duration_h | Daily optimal (LP) and heuristic schedule results for a 1 MW battery (ADR-007). Incomplete price days skipped |
@@ -62,7 +64,8 @@ Source: `query_load` (process type A16, realised). File: `data/raw/load/zone=<ZO
 |---|---|---|
 | zone | text | Bidding zone code |
 | local_year | int | Calendar year in the zone's local time |
-| negative_hours | double | Σ duration (h) of periods with price < 0 |
+| negative_hours | double | Σ duration (h) of periods with price < 0 (headline) |
+| negative_hours_hourly_avg | double | Hours whose hourly mean price is < 0; equals negative_hours before 2025-10-01 (ADR-005 update) |
 | zero_or_negative_hours | double | Σ duration (h) of periods with price ≤ 0 |
 | covered_hours | double | Σ duration (h) of periods with a price |
 | expected_hours | double | Hours in the local year (current year: up to the end of the last period) |
@@ -133,6 +136,11 @@ Perfect foresight on cleared day-ahead prices, 1 cycle a day, 88% round trip: an
 
 Wholesale day-ahead component only: no retail margin, taxes or grid fees. Definitions: [[04 Decisions/ADR-008 EV Charging Strategies|ADR-008]].
 
+### Current year, as-of date and snapshots
+- Every mart row has `data_through_date`: 31 December, or the as-of date (`int_as_of`) for the current year. The current year's `expected_hours` runs to the end of the as-of date, so its completeness is real.
+- `analysis/outputs/*.csv` and the dashboard are live (updated by the daily refresh). Numbers written in the README and finding notes come from a frozen copy, `analysis/outputs/snapshots/<as-of date>/`, which also holds `quoted_numbers.csv`: each quoted 2026 number, the text around it and how to recompute it. `tests/test_quoted_numbers.py` checks them.
+- `analysis/outputs/q3_hourly_resolve_ytd.csv` is written by the Q3 notebook (2026 battery revenue re-solved on hourly prices), not by the daily refresh.
+
 ## Data quality log
 | Date found | Zone | Issue | How handled |
 |---|---|---|---|
@@ -156,3 +164,7 @@ Wholesale day-ahead component only: no retail margin, taxes or grid fees. Defini
 | 2026-10-03 | PL | Solar reported only from 2020-04-10 (none in 2019, 73% of 2020 hours) | PL 2019–2020 solar metrics null (coverage < 0.95, ADR-006) |
 | 2026-10-03 | FR, PT, PL | Wind Offshore appears mid-series (FR 2023-06, PT 2020-06, PL 2026-07): new farms, not gaps | Combined with onshore as `wind` |
 | 2026-10-03 | all | Generation for the current day ends ~1 day before prices (day-ahead prices cover tomorrow) | 2026 coverage 0.993 to 0.997; only matched hours used |
+| 2026-10-04 | all | Current-year metrics ran to different days per zone and mart (prices to tomorrow, generation ~1 day behind, PT's last day partly published), and current-year completeness was 1.0 by construction | One run-wide as-of date (`int_as_of`), all current-year data cut there; expected hours to the end of that date (ADR-005 update) |
+| 2026-10-04 | ES, PT | May 2025: prices split in 389 hours (6 to 136 in other months); ES 239 negative hours, PT 4. Follows the 28 Apr 2025 blackout: ES→PT trading halted, then REN capped imports from Spain (Bloomberg, 18 May 2025) | Kept; disclosed in Q1-2 and README; ES and PT not treated as one block for 2025 |
+| 2026-10-04 | FR | 2024 negative hours 352 vs 359 published by RTE; gap entirely in H1 (226 vs 233); 2023 matches exactly (147) | Unexplained; disclosed in ADR-005 |
+| 2026-10-04 | IT_NORD | No negative price ever; lowest price exactly 0 | Market rule: GME day-ahead offers must be ≥ 0 €/MWh (DTF n. 12 MPE); noted wherever IT_NORD is ranked |
