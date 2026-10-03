@@ -1,0 +1,124 @@
+# Daily refresh: download the latest ENTSO-E data, rebuild the warehouse, run the
+# battery model, and commit the small outputs (CSVs + dashboard data). ADR-009.
+name: Daily refresh
+
+on:
+  schedule:
+    # 12:30 UTC: after the day-ahead auction results for tomorrow are published
+    # (around 11:45 UTC in winter, 10:45 UTC in summer).
+    - cron: "30 12 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: daily-refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    # A cache miss means a full backfill (about 3 hours, see ADR-009).
+    timeout-minutes: 330
+    env:
+      ENTSOE_API_KEY: ${{ secrets.ENTSOE_API_KEY }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+
+      - name: Install dependencies from the lockfile
+        run: uv sync --locked
+
+      - name: Check that the API key secret is set
+        run: |
+          if [ -z "$ENTSOE_API_KEY" ]; then
+            echo "::error::The repository secret ENTSOE_API_KEY is not set (Settings > Secrets and variables > Actions)."
+            exit 1
+          fi
+
+      - name: Unit tests
+        run: uv run pytest -q
+
+      # data/raw is not in git. Each run restores the newest cache and saves a new
+      # one under a unique key (a cache entry can't be overwritten).
+      - name: Restore raw data
+        id: raw-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: data/raw
+          key: raw-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: raw-
+
+      - name: Full backfill (no cached raw data)
+        if: steps.raw-cache.outputs.cache-matched-key == ''
+        run: |
+          echo "::notice::No cached raw data found: running the full backfill from 2019."
+          echo "> **Cache miss:** no cached raw data, so the full backfill (2019 to today) ran." >> "$GITHUB_STEP_SUMMARY"
+          uv run python -m pipeline.extract
+
+      - name: Refresh the current year
+        # The backfill above already downloaded it.
+        if: steps.raw-cache.outputs.cache-matched-key != ''
+        run: |
+          year=$(date -u +%Y)
+          # Early January: also re-download last year, whose final day was still
+          # incomplete when it was last fetched.
+          if [ "$(date -u +%-j)" -le 7 ]; then
+            uv run python -m pipeline.extract --start-year $((year - 1)) --end-year $((year - 1)) --force
+          fi
+          uv run python -m pipeline.extract --start-year "$year"
+
+      - name: Save raw data
+        if: ${{ !cancelled() }}
+        uses: actions/cache/save@v4
+        with:
+          path: data/raw
+          key: raw-${{ github.run_id }}-${{ github.run_attempt }}
+
+      # Tests must pass: dbt build exits non-zero on any failing test.
+      - name: Build the warehouse (dbt)
+        working-directory: warehouse
+        run: uv run dbt build --exclude source:battery+
+
+      - name: Run the battery model
+        run: uv run python -m models.run_battery
+
+      - name: Build the battery mart (dbt)
+        working-directory: warehouse
+        run: uv run dbt build --select source:battery+
+
+      - name: Export CSVs and dashboard data
+        run: |
+          uv run python analysis/export_outputs.py
+          uv run python dashboard/build_data.py
+
+      - name: Job summary
+        run: uv run python -m pipeline.report >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Commit outputs if they changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add analysis/outputs/*.csv dashboard/data/
+          if git diff --cached --quiet; then
+            echo "No output changed: nothing to commit." | tee -a "$GITHUB_STEP_SUMMARY"
+          else
+            git commit -m "data: daily refresh $(date -u +%F)"
+            git pull --rebase origin main
+            git push origin HEAD:main
+            echo "Committed: data: daily refresh $(date -u +%F)" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+  # A push made with the workflow's own token doesn't trigger other workflows,
+  # so deploy the dashboard from here.
+  deploy-dashboard:
+    needs: refresh
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    uses: ./.github/workflows/pages.yml
