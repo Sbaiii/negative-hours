@@ -252,3 +252,57 @@ models:
         data_tests: [not_null]
       - name: partial_reason
         description: "'current_year' / 'pln_prices_excluded' / null."
+
+  - name: fct_hourly_profile
+    description: >
+      Q4 — the daily price shape. One row per zone, local year, season and local
+      hour of day (0 to 23). Seasons are meteorological and stay inside the local
+      calendar year: winter = Jan, Feb, Dec (ADR-008). Mean and share are
+      duration-weighted over native periods; the median is over hourly values.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [zone, local_year, season, local_hour]
+      - expression_is_true:
+          arguments:
+            expression: "is_partial_year = (partial_reason is not null)"
+    columns:
+      - name: zone
+        data_tests: [not_null]
+      - name: local_year
+        data_tests: [not_null]
+      - name: season
+        description: winter (Jan, Feb, Dec), spring (Mar to May), summer (Jun to Aug), autumn (Sep to Nov).
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['winter', 'spring', 'summer', 'autumn']
+      - name: local_hour
+        description: Hour of day on the zone's local clock (0 = 00:00 to 01:00).
+        data_tests:
+          - not_null
+          - accepted_range:
+              arguments:
+                min_value: 0
+                max_value: 23
+      - name: mean_price
+        description: Duration-weighted mean day-ahead price, EUR/MWh.
+        data_tests: [not_null]
+      - name: median_price
+        description: Median of the hourly prices (one per day; 15-min periods averaged to the hour first), EUR/MWh.
+        data_tests: [not_null]
+      - name: share_at_or_below_zero
+        description: Share of the time (duration-weighted) with a price at or below 0.
+        data_tests:
+          - accepted_range:
+              arguments:
+                min_value: 0
+                max_value: 1
+      - name: covered_hours
+        description: Hours with a price in this cell; weight for combining seasons into a year.
+      - name: is_partial_year
+        description: Same rule as fct_negative_hours (current year, a known reason, or completeness < 0.98).
+        data_tests: [not_null]
+      - name: partial_reason
+        description: "'current_year' / 'pln_prices_excluded' / null."
+
