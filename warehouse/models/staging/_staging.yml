@@ -1,7 +1,9 @@
 models:
   - name: stg_prices
     description: >
-      Day-ahead prices, one row per zone and period. Renamed/typed only.
+      Day-ahead prices, one row per zone and period. Renamed/typed only, with one
+      exclusion: PL prices before 2019-11-19 23:00 UTC (delivery day 2019-11-20, when
+      Poland joined European market coupling) are in PLN, not EUR, and are left out.
       Periods are 60 min until the SDAC switch to 15-min products (2025-09-30 22:00 UTC),
       15 min after.
     data_tests:

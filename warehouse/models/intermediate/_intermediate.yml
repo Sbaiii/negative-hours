@@ -1,0 +1,36 @@
+models:
+  - name: int_prices_local
+    description: >
+      stg_prices plus each zone's local time (from seed `zones`) and the period
+      length in hours. Same grain as stg_prices: one row per zone and period.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [zone, ts_utc]
+    columns:
+      - name: zone
+        description: Bidding zone code.
+        data_tests: [not_null]
+      - name: ts_utc
+        description: Start of the period, UTC (key).
+        data_tests: [not_null]
+      - name: ts_local
+        description: Start of the period on the zone's local wall clock (no time zone). Repeats for one hour at the autumn DST change.
+      - name: local_date
+        description: Local calendar date of the period start.
+      - name: local_year
+        description: Local calendar year of the period start. Years in the marts are local years (ADR-005).
+        data_tests: [not_null]
+      - name: timezone
+        description: IANA time zone used for the zone.
+      - name: price_eur_mwh
+        description: Day-ahead price, EUR/MWh.
+      - name: resolution_minutes
+        description: Length of the period in minutes.
+      - name: duration_h
+        description: Length of the period in hours (resolution_minutes / 60). Sum this, not rows, to measure time.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [0.25, 1.0]

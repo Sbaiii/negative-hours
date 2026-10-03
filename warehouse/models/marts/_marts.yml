@@ -1,0 +1,48 @@
+models:
+  - name: fct_negative_hours
+    description: >
+      Q1 — how often day-ahead prices are negative. One row per zone and local
+      calendar year. All "hours" are summed period durations, so 15-min and 60-min
+      periods count correctly (ADR-005).
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [zone, local_year]
+      - expression_is_true:
+          arguments:
+            expression: "negative_hours <= zero_or_negative_hours and zero_or_negative_hours <= covered_hours"
+    columns:
+      - name: zone
+        description: Bidding zone code.
+        data_tests: [not_null]
+      - name: local_year
+        description: Calendar year in the zone's local time.
+        data_tests: [not_null]
+      - name: negative_hours
+        description: Hours with a day-ahead price strictly below 0 EUR/MWh.
+        data_tests: [not_null]
+      - name: zero_or_negative_hours
+        description: Hours with a price at or below 0 EUR/MWh (includes exactly-zero prices, common in Iberia).
+        data_tests: [not_null]
+      - name: covered_hours
+        description: Hours with a price in the data.
+      - name: expected_hours
+        description: Hours in the local year (8760/8784), or up to the end of the last period for the current year.
+      - name: completeness
+        description: covered_hours / expected_hours.
+        data_tests:
+          - accepted_range:
+              arguments:
+                min_value: 0.98
+                max_value: 1.0
+              config:
+                severity: warn
+                where: "not is_partial_year"
+      - name: min_price
+        description: Lowest price in the year, EUR/MWh.
+      - name: avg_price
+        description: Duration-weighted average price, EUR/MWh.
+      - name: avg_price_negative_periods
+        description: Duration-weighted average price over negative-price periods only, EUR/MWh. Null if none.
+      - name: is_partial_year
+        description: True for the current (incomplete) year.
