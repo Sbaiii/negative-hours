@@ -29,6 +29,10 @@ Option 3, in `.github/workflows/refresh.yml` (daily) and `.github/workflows/page
 
 **Dashboard:** static files in `dashboard/` (HTML, CSS, vanilla JS, inline SVG; no build step) deployed with GitHub Pages "Source: GitHub Actions". `pages.yml` runs on pushes that touch `dashboard/`, by hand, and is called by the refresh job, because a push made with the workflow's own `GITHUB_TOKEN` does not trigger other workflows. Only `index.html`, `style.css`, `app.js` and `data/` are published.
 
+**Runner and action versions:**
+- `runs-on: ubuntu-24.04`, not `ubuntu-latest`: GitHub moves `ubuntu-latest` to Ubuntu 26 from 19 Oct 2026, which would change Python builds, system libraries and tools under a pipeline that hasn't changed. Moving to a newer image is a deliberate commit.
+- Each action is pinned to the latest **major tag that exists** in its repository, checked with `git ls-remote --tags` (not the latest release number): `actions/checkout@v7`, `actions/cache/restore@v6` and `actions/cache/save@v6`, `actions/configure-pages@v6`, `actions/upload-pages-artifact@v5`, `actions/deploy-pages@v5`, `astral-sh/setup-uv@v7`. setup-uv stopped publishing major tags after v7 (releases v8 to v10 only have full `vX.Y.Z` tags); moving past v7 means pinning a full version.
+
 **Secret:** `ENTSOE_API_KEY` is a repository secret, passed as an environment variable. GitHub masks it in logs, and the extractor's log formatter also replaces `securityToken=…` with `***` (requests puts the full URL in error messages).
 
 ## Why

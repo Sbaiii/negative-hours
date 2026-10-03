@@ -18,7 +18,7 @@ concurrency:
 
 jobs:
   refresh:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     # A cache miss means a full backfill (about 3 hours, see ADR-009).
     timeout-minutes: 330
     env:
@@ -26,7 +26,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - uses: astral-sh/setup-uv@v10
+      - uses: astral-sh/setup-uv@v7
         with:
           enable-cache: true
 
