@@ -53,6 +53,16 @@ ENTSO-E API ──► pipeline/ (Python) ──► data/raw (Parquet)
 
 [ENTSO-E Transparency Platform](https://transparency.entsoe.eu/) — official European grid data (day-ahead prices, generation by source, load).
 
+## First results
+
+![Negative prices went from rare to routine: 5 of 8 zones topped 500 hours in 2025, up from at most 112 in 2022](docs/figures/q1_negative_hours_by_zone.svg)
+
+- **Rare → routine.** In 2025, 5 of the 8 zones had more than 500 hours of negative day-ahead prices; in 2022 the highest was 112.
+- **Frequency ≠ depth.** Spain had nearly as many negative hours as Germany in 2025 (551.5 vs 574.75), but they averaged −2.11 €/MWh vs −10.92.
+- **North Italy has never gone negative** (2019 – Oct 2026), an open question.
+
+Notebook: [`analysis/q1_negative_hours.ipynb`](analysis/q1_negative_hours.ipynb) · Findings: [`control-room/06 Findings/`](control-room/06%20Findings/) · Metric definition: [ADR-005](control-room/04%20Decisions/ADR-005%20Negative%20Hours%20Metric.md)
+
 ## Run it locally
 
 You need [uv](https://docs.astral.sh/uv/) and a free ENTSO-E API token
