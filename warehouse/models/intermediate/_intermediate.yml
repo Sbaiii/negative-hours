@@ -107,3 +107,32 @@ models:
       - name: total_generation_mwh
         description: Energy of all reported production types in the hour (MWh).
         data_tests: [not_null]
+
+  - name: int_ev_charging_daily
+    description: >
+      Wholesale cost of one day's EV charging (10 kWh at 7 kW, one continuous
+      block) under three strategies: immediate (18:00), overnight (cheapest block
+      22:00 to 07:00) and smart (cheapest block in the day). One row per zone and
+      local day with all three windows fully priced (ADR-008).
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [zone, local_date]
+      - expression_is_true:
+          arguments:
+            expression: "smart_eur <= immediate_eur + 0.000001"
+    columns:
+      - name: zone
+        data_tests: [not_null]
+      - name: local_date
+        description: Local day D (the overnight window runs from 22:00 on D to 07:00 on D+1).
+        data_tests: [not_null]
+      - name: immediate_eur
+        description: Cost of the block starting at 18:00, EUR.
+        data_tests: [not_null]
+      - name: overnight_eur
+        description: Cost of the cheapest block between 22:00 and 07:00, EUR.
+        data_tests: [not_null]
+      - name: smart_eur
+        description: Cost of the cheapest block within the day, EUR (can be below 0).
+        data_tests: [not_null]
