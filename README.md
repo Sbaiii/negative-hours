@@ -53,15 +53,30 @@ ENTSO-E API ──► pipeline/ (Python) ──► data/raw (Parquet)
 
 [ENTSO-E Transparency Platform](https://transparency.entsoe.eu/) — official European grid data (day-ahead prices, generation by source, load).
 
-## First results
+## Results
+
+### Q1 · How often are prices negative?
 
 ![Negative prices went from rare to routine: 5 of 8 zones topped 500 hours in 2025, up from at most 112 in 2022](docs/figures/q1_negative_hours_by_zone.svg)
 
 - **Rare → routine.** In 2025, 5 of the 8 zones had more than 500 hours of negative day-ahead prices; in 2022 the highest was 112.
 - **Frequency ≠ depth.** Spain had nearly as many negative hours as Germany in 2025 (551.5 vs 574.75), but they averaged −2.11 €/MWh vs −10.92.
-- **North Italy has never gone negative** (2019 – Oct 2026), an open question.
+- **North Italy has never gone negative** (2019 to Oct 2026), an open question.
 
-Notebook: [`analysis/q1_negative_hours.ipynb`](analysis/q1_negative_hours.ipynb) · Findings: [`control-room/06 Findings/`](control-room/06%20Findings/) · Metric definition: [ADR-005](control-room/04%20Decisions/ADR-005%20Negative%20Hours%20Metric.md)
+Notebook: [`analysis/q1_negative_hours.ipynb`](analysis/q1_negative_hours.ipynb) · Metric: [ADR-005](control-room/04%20Decisions/ADR-005%20Negative%20Hours%20Metric.md)
+
+### Q2 · Does solar cannibalise its own value?
+
+![In 2025 solar earned only 51% to 59% of the average power price in 5 of 8 zones, down from 92% to 102% in 2019](docs/figures/q2_solar_capture_rate_by_zone.svg)
+
+- **Solar earns about half the average price.** In 2025 its capture rate was 51 to 59% in Belgium, Germany, Portugal, Spain and France, down from 92 to 102% in 2019. Germany's 2024 solar capture price (46.23 €/MWh) matches the published German solar market value.
+- **More solar, less value, everywhere.** In all 7 zones with usable data, solar's share rose and its capture rate fell from 2019 to 2025 (Spain: 6% solar at 102% → 20% at 55%).
+- **Wind holds up.** Wind kept 86 to 96% of the average price in 2025.
+- **Caveat:** generation is *as reported to ENTSO-E*; the Netherlands series misses ~98% of Dutch solar, so NL solar figures are indicative only.
+
+Notebook: [`analysis/q2_capture_prices.ipynb`](analysis/q2_capture_prices.ipynb) · Method: [ADR-006](control-room/04%20Decisions/ADR-006%20Hourly%20Grid%20and%20Capture%20Prices.md)
+
+All findings, with exact numbers and caveats: [`control-room/06 Findings/`](control-room/06%20Findings/)
 
 ## Run it locally
 

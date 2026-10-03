@@ -23,15 +23,15 @@ Target: **3 weeks** (2026-10-01 → 2026-10-21). One commit minimum every workin
 ## Phase 2 — Warehouse (Days 5–7) ← we are here
 - [x] dbt-duckdb project in `warehouse/`
 - [x] Staging models (prices, generation, load)
-- [ ] Marts: `fct_prices_hourly`, `fct_negative_hours` ✅, `fct_capture_prices`, `fct_battery_arbitrage`
+- [ ] Marts: `fct_prices_hourly`, `fct_negative_hours` ✅, `fct_capture_prices` ✅, `fct_battery_arbitrage`
 - [x] Tests (not null, unique, accepted ranges) + `dbt docs`
 
 ## Phase 3 — Analysis (Days 8–12)
 - [x] Q1 Negative hours → `analysis/q1_negative_hours.ipynb`, 3 charts in `docs/figures/`
-- [ ] Q2 Solar capture rate
+- [x] Q2 Solar capture rate → `analysis/q2_capture_prices.ipynb`, 3 charts in `docs/figures/`
 - [ ] Q3 Battery arbitrage value
 - [ ] Q4 EV charging windows
-- [ ] One finding note per insight in `06 Findings/` (Q1: 3 notes ✅)
+- [ ] One finding note per insight in `06 Findings/` (Q1: 3 notes ✅, Q2: 3 notes ✅)
 
 ## Phase 4 — Ship (Days 13–16)
 - [ ] Dashboard (live, embedded on sbaiii.com)
