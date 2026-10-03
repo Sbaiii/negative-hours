@@ -23,7 +23,7 @@ Target: **3 weeks** (2026-10-01 → 2026-10-21). One commit minimum every workin
 ## Phase 2 — Warehouse (Days 5–7) ← we are here
 - [x] dbt-duckdb project in `warehouse/`
 - [x] Staging models (prices, generation, load)
-- [ ] Marts: `fct_prices_hourly`, `fct_negative_hours` ✅, `fct_capture_prices` ✅, `fct_battery_arbitrage` ✅
+- [x] Marts: `fct_negative_hours` ✅, `fct_capture_prices` ✅, `fct_battery_arbitrage` ✅, `fct_hourly_profile` ✅, `fct_ev_charging` ✅ (~~`fct_prices_hourly`~~ dropped: covered by `int_energy_hourly` and `fct_hourly_profile`)
 - [x] Tests (not null, unique, accepted ranges) + `dbt docs`
 
 ## Phase 3 — Analysis (Days 8–12)
