@@ -24,6 +24,14 @@ def main() -> None:
     con.execute("set TimeZone = 'UTC'")
     con.execute("set enable_progress_bar = false")
 
+    as_of, limiting_zone, last_price_day, _ = con.sql(
+        "select * from int_as_of"
+    ).fetchone()
+    print(
+        f"**As-of date: {as_of}** (all current-year numbers stop here; limited by {limiting_zone})."
+    )
+    print(f"Prices are complete in every zone up to {last_price_day}.\n")
+
     print("### Raw data (Parquet)\n")
     print("| Dataset | Rows | Zones | First period (UTC) | Last period (UTC) |")
     print("|---|---:|---:|---|---|")
