@@ -3,8 +3,12 @@
 -- empty at the start and end of each local day, perfect foresight on cleared
 -- day-ahead prices: an upper bound for this one market, not a business case.
 
+-- Days after the as-of date are left out, even if the battery table was built
+-- from newer prices, so the current year matches the other marts.
 with days as (
-    select * from {{ source('battery', 'arbitrage_daily') }}
+    select *
+    from {{ source('battery', 'arbitrage_daily') }}
+    where local_date <= (select as_of_date from {{ ref('int_as_of') }})
 ),
 
 zone_years as (
@@ -56,6 +60,7 @@ select
     round(by_year.solved_hours / zone_years.expected_hours, 4) as coverage,
     zone_years.known_partial_reason is not null
         or by_year.solved_hours / zone_years.expected_hours < 0.98 as is_partial_year,
-    zone_years.known_partial_reason as partial_reason
+    zone_years.known_partial_reason as partial_reason,
+    zone_years.data_through_date
 from by_year
 inner join zone_years using (zone, local_year)

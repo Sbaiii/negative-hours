@@ -26,7 +26,10 @@ with periods as (
         timezone,
         price_eur_mwh,
         duration_h
-    from {{ ref('int_prices_local') }}
+    -- All published prices: day D's overnight window needs D+1's prices, which
+    -- are published around noon on D. Days themselves stop at the as-of date
+    -- (end of this model).
+    from {{ ref('int_prices_published') }}
 ),
 
 -- Every period start is a candidate start of a charging block. Join the periods
@@ -136,4 +139,6 @@ daily as (
     having count(*) = 3
 )
 
-select * from daily
+select *
+from daily
+where local_date <= (select as_of_date from {{ ref('int_as_of') }})

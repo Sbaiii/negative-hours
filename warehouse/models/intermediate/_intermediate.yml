@@ -1,8 +1,38 @@
 models:
+  - name: int_as_of
+    description: >
+      One row: the run's as-of date, the last local day on which every zone has a
+      complete day of day-ahead prices and of generation. Current-year numbers in
+      every mart stop at this date (ADR-005). Also the zone that holds it back.
+    data_tests:
+      - expression_is_true:
+          arguments:
+            expression: "zones = 8 and as_of_date is not null and as_of_date <= last_complete_price_day_all_zones"
+    columns:
+      - name: as_of_date
+        description: Last local day with complete prices and generation in all zones.
+      - name: limiting_zone
+        description: The zone whose data ends first (usually generation arriving late).
+      - name: last_complete_price_day_all_zones
+        description: Last local day with complete prices in every zone (prices alone).
+      - name: zones
+        description: Zones considered (must be 8).
+
+  - name: int_prices_published
+    description: >
+      Every published day-ahead price with each zone's local time and period
+      length. Runs into tomorrow and its newest day can be partly published; read
+      int_prices_local instead, except for the next-morning prices EV overnight
+      charging needs.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [zone, ts_utc]
+
   - name: int_prices_local
     description: >
-      stg_prices plus each zone's local time (from seed `zones`) and the period
-      length in hours. Same grain as stg_prices: one row per zone and period.
+      int_prices_published up to and including the as-of date (int_as_of): the
+      price table every mart reads. One row per zone and period.
     data_tests:
       - unique_combination:
           arguments:
@@ -51,7 +81,10 @@ models:
       - name: local_year
         data_tests: [not_null]
       - name: expected_hours
-        description: Hours in the local year (8760/8784), or up to the end of the last price period for the current year.
+        description: Hours in the local year (8760/8784); for the current year, hours up to the end of the as-of date.
+        data_tests: [not_null]
+      - name: data_through_date
+        description: Last day the year's numbers cover (31 December, or the as-of date for the current year).
         data_tests: [not_null]
       - name: known_partial_reason
         description: "'current_year', 'pln_prices_excluded' or null."
@@ -60,52 +93,51 @@ models:
               arguments:
                 values: ['current_year', 'pln_prices_excluded']
 
-  - name: int_energy_hourly
+  - name: int_energy_periods
     description: >
-      Prices and generation per zone on a common hourly grid (ADR-006): the hourly
-      price is the duration-weighted mean of the periods in the hour, generation is
-      energy (MWh = MW x duration_h) summed within the hour. Only hours with both a
-      price and some generation are kept.
+      Prices and generation matched on the generation period (ADR-006, update of
+      2026-10-04): one row per zone and generation period, with its energy per
+      technology and the duration-weighted price over exactly that period. 15-min
+      generation gets 15-min prices where they exist (most zones since
+      2025-10-01); hourly generation (BE, PT) gets the hour's mean price. Only
+      periods with a price, up to the as-of date.
     data_tests:
       - unique_combination:
           arguments:
-            columns: [zone, hour_utc]
+            columns: [zone, period_start_utc]
     columns:
       - name: zone
         data_tests: [not_null]
-      - name: hour_utc
-        description: Start of the hour, UTC.
+      - name: period_start_utc
+        description: Start of the generation period, UTC.
         data_tests: [not_null]
-      - name: hour_local
-        description: Start of the hour on the zone's local wall clock (repeats at the autumn DST change).
+      - name: period_start_local
+        description: Start of the period on the zone's local wall clock (repeats at the autumn DST change).
       - name: local_date
         description: Local calendar date.
       - name: local_year
         description: Local calendar year (ADR-005).
         data_tests: [not_null]
+      - name: resolution_minutes
+        description: Length of the generation period (15 or 60).
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [15, 30, 60]
+                quote: false
+      - name: duration_h
+        description: Length of the period in hours.
       - name: price_eur_mwh
-        description: Duration-weighted mean day-ahead price in the hour, EUR/MWh.
+        description: Duration-weighted mean day-ahead price over the period, EUR/MWh.
         data_tests: [not_null]
       - name: price_hours_covered
-        description: Fraction of the hour with a price (1.0 = complete).
-        data_tests:
-          - accepted_range:
-              arguments:
-                min_value: 0.25
-                max_value: 1.0
-      - name: generation_hours_covered
-        description: Fraction of the hour with generation periods (1.0 = complete).
-        data_tests:
-          - accepted_range:
-              arguments:
-                min_value: 0.25
-                max_value: 1.0
+        description: Hours of the period with a price (equals duration_h when complete).
       - name: solar_mwh
-        description: Solar energy in the hour as reported to ENTSO-E (MWh); null if no Solar row.
+        description: Solar energy in the period as reported to ENTSO-E (MWh); null if no Solar row.
       - name: wind_mwh
-        description: Wind onshore + offshore energy in the hour (MWh); null if no wind row.
+        description: Wind onshore + offshore energy in the period (MWh); null if no wind row.
       - name: total_generation_mwh
-        description: Energy of all reported production types in the hour (MWh).
+        description: Energy of all reported production types in the period (MWh).
         data_tests: [not_null]
 
   - name: int_ev_charging_daily

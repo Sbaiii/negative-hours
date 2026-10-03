@@ -22,7 +22,7 @@ by_period as (
 ),
 
 year_coverage as (
-    select zone, local_year, completeness, partial_reason
+    select zone, local_year, completeness, partial_reason, data_through_date
     from {{ ref('fct_negative_hours') }}
 )
 
@@ -45,6 +45,7 @@ select
     round(smart * 1000 / {{ energy_kwh }}, 2) as smart_price_eur_mwh,
     year_coverage.partial_reason is not null or year_coverage.completeness < 0.98
         as is_partial_year,
-    year_coverage.partial_reason
+    year_coverage.partial_reason,
+    year_coverage.data_through_date
 from by_period
 inner join year_coverage using (zone, local_year)

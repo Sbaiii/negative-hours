@@ -59,7 +59,7 @@ by_hour as (
 
 -- Partial years: same rule as the other marts, on the whole year's coverage.
 year_coverage as (
-    select zone, local_year, completeness, partial_reason
+    select zone, local_year, completeness, partial_reason, data_through_date
     from {{ ref('fct_negative_hours') }}
 )
 
@@ -74,7 +74,8 @@ select
     by_hour.covered_hours,
     year_coverage.partial_reason is not null or year_coverage.completeness < 0.98
         as is_partial_year,
-    year_coverage.partial_reason
+    year_coverage.partial_reason,
+    year_coverage.data_through_date
 from by_hour
 inner join medians using (zone, local_year, season, local_hour)
 inner join year_coverage using (zone, local_year)
