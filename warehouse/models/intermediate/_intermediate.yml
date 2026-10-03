@@ -34,3 +34,28 @@ models:
           - accepted_values:
               arguments:
                 values: [0.25, 1.0]
+
+  - name: int_zone_years
+    description: >
+      One row per zone and local calendar year with prices: the year's start and end
+      (local midnight, as UTC instants), expected hours (current year: up to the end
+      of the last price period) and any known reason the year is partial. Shared by
+      fct_negative_hours and fct_capture_prices so they agree on partial years.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [zone, local_year]
+    columns:
+      - name: zone
+        data_tests: [not_null]
+      - name: local_year
+        data_tests: [not_null]
+      - name: expected_hours
+        description: Hours in the local year (8760/8784), or up to the end of the last price period for the current year.
+        data_tests: [not_null]
+      - name: known_partial_reason
+        description: "'current_year', 'pln_prices_excluded' or null."
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['current_year', 'pln_prices_excluded']
