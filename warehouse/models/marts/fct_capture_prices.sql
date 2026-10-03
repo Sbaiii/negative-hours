@@ -58,21 +58,21 @@ select
     metrics.local_year,
     round(metrics.baseload_price, 2) as baseload_price,
 
-    case when solar_ok then round(metrics.solar_mwh, 1) end as solar_mwh,
+    case when solar_ok then round(metrics.solar_mwh, 3) end as solar_mwh,
     case when solar_ok then round(metrics.solar_capture_price, 2) end as solar_capture_price,
     case when solar_ok then round(metrics.solar_capture_price / metrics.baseload_price, 4) end
         as solar_capture_rate,
     case when solar_ok then round(metrics.solar_mwh / metrics.total_generation_mwh, 4) end
         as solar_share,
 
-    case when wind_ok then round(metrics.wind_mwh, 1) end as wind_mwh,
+    case when wind_ok then round(metrics.wind_mwh, 3) end as wind_mwh,
     case when wind_ok then round(metrics.wind_capture_price, 2) end as wind_capture_price,
     case when wind_ok then round(metrics.wind_capture_price / metrics.baseload_price, 4) end
         as wind_capture_rate,
     case when wind_ok then round(metrics.wind_mwh / metrics.total_generation_mwh, 4) end
         as wind_share,
 
-    round(metrics.total_generation_mwh, 1) as total_generation_mwh,
+    round(metrics.total_generation_mwh, 3) as total_generation_mwh,
     metrics.matched_hours,
     zone_years.expected_hours,
     round(metrics.matched_hours / zone_years.expected_hours, 4) as coverage,

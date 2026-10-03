@@ -18,8 +18,11 @@ select
     cast(timezone(zones.timezone, prices.ts_utc) as date) as local_date,
     year(timezone(zones.timezone, prices.ts_utc)) as local_year,
     zones.timezone,
-    prices.price_eur_mwh,
+    -- Exact decimals (prices have 2, durations are 0.25 or 1): sums of price x
+    -- duration are then exact and identical on every build, so averages never
+    -- flip at a rounding boundary.
+    cast(prices.price_eur_mwh as decimal(12, 2)) as price_eur_mwh,
     prices.resolution_minutes,
-    prices.resolution_minutes / 60.0 as duration_h
+    cast(prices.resolution_minutes / 60.0 as decimal(4, 2)) as duration_h
 from prices
 inner join zones using (zone)

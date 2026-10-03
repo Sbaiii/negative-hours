@@ -43,7 +43,7 @@ select
     round(by_year.avg_buy_price, 2) as avg_buy_price,
     round(by_year.cycles, 1) as cycles,
     round(by_year.cycles / by_year.days_solved, 3) as avg_daily_cycles,
-    round(by_year.charged_negative_mwh, 1) as charged_negative_mwh,
+    round(by_year.charged_negative_mwh, 3) as charged_negative_mwh,
     round(by_year.negative_charging_revenue, 0) as negative_charging_revenue_eur,
     -- Share of the year's revenue that was paid to the battery for charging at
     -- negative prices (the rest comes from selling above the purchase price).

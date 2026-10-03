@@ -18,16 +18,28 @@ with prices as (
     group by zone, hour_utc
 ),
 
+-- Energy is computed in exact decimals: ENTSO-E reports MW with up to 6 decimals
+-- and periods are 0.25, 0.5 or 1 h, so MWh is exact at 8 decimals. Floating-point
+-- sums run in parallel and can differ in the last bit between builds, which flips
+-- totals that sit exactly on a rounding boundary (e.g. 82,793,393.55 MWh).
+energy as (
+    select
+        zone,
+        ts_utc,
+        production_type,
+        cast(generation_mw as decimal(18, 6))
+            * cast(resolution_minutes / 60.0 as decimal(4, 2)) as mwh
+    from {{ ref('stg_generation') }}
+),
+
 generation as (
     select
         zone,
         date_trunc('hour', ts_utc) as hour_utc,
-        sum(generation_mw * resolution_minutes / 60.0)
-            filter (where production_type = 'Solar') as solar_mwh,
-        sum(generation_mw * resolution_minutes / 60.0)
-            filter (where production_type in ('Wind Onshore', 'Wind Offshore')) as wind_mwh,
-        sum(generation_mw * resolution_minutes / 60.0) as total_generation_mwh
-    from {{ ref('stg_generation') }}
+        sum(mwh) filter (where production_type = 'Solar') as solar_mwh,
+        sum(mwh) filter (where production_type in ('Wind Onshore', 'Wind Offshore')) as wind_mwh,
+        sum(mwh) as total_generation_mwh
+    from energy
     group by zone, hour_utc
 ),
 
