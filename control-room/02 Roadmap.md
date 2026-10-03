@@ -30,8 +30,8 @@ Target: **3 weeks** (2026-10-01 → 2026-10-21). One commit minimum every workin
 - [x] Q1 Negative hours → `analysis/q1_negative_hours.ipynb`, 3 charts in `docs/figures/`
 - [x] Q2 Solar capture rate → `analysis/q2_capture_prices.ipynb`, 4 charts in `docs/figures/`; 2022 and regional hypotheses tested
 - [x] Q3 Battery arbitrage value → daily LP (`models/battery.py`, ADR-007), `analysis/q3_battery_arbitrage.ipynb`, 4 charts in `docs/figures/`
-- [ ] Q4 EV charging windows
-- [ ] One finding note per insight in `06 Findings/` (Q1: 3 notes ✅, Q2: 5 notes ✅, Q3: 4 notes ✅)
+- [x] Q4 EV charging windows → `fct_hourly_profile`, `fct_ev_charging` (ADR-008), `analysis/q4_ev_charging.ipynb`, 3 charts in `docs/figures/`
+- [ ] One finding note per insight in `06 Findings/` (Q1: 3 notes ✅, Q2: 5 notes ✅, Q3: 4 notes ✅, Q4: 3 notes ✅)
 
 ## Phase 4 — Ship (Days 13–16)
 - [ ] Dashboard (live, embedded on sbaiii.com)

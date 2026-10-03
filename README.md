@@ -91,6 +91,17 @@ Notebook: [`analysis/q2_capture_prices.ipynb`](analysis/q2_capture_prices.ipynb)
 
 Notebook: [`analysis/q3_battery_arbitrage.ipynb`](analysis/q3_battery_arbitrage.ipynb) · Model: [ADR-007](control-room/04%20Decisions/ADR-007%20Battery%20Arbitrage%20Model.md), [`models/battery.py`](models/battery.py)
 
+### Q4 · When should EVs charge?
+
+![Smart charging cut an EV's wholesale cost by 67% to 74% in 2025, except in North Italy (39%)](docs/figures/q4_smart_charging_savings_2025.svg)
+
+- **The cheap hours moved to midday.** The cheapest hour of the day started at 03:00 or 04:00 in 2019 in every zone, and at 12:00 to 14:00 in 2025; from March to September 2025 it fell between 12:00 and 16:00 everywhere.
+- **Smart charging cuts the wholesale cost by about 70%.** For 10 kWh a day at 7 kW, charging in the cheapest block of the day instead of at 18:00 saved €182 to €368 a year in 2025 (67% to 74%; North Italy 39%).
+- **"Charge at night" is losing its edge.** Overnight charging got 88% to 100% of the smart saving in 2019, only 23% to 67% in 2025; in Spain it now costs more than charging at 18:00.
+- **Caveat:** wholesale day-ahead price only: retail margins, taxes and grid fees are excluded, so these are not household bills.
+
+Notebook: [`analysis/q4_ev_charging.ipynb`](analysis/q4_ev_charging.ipynb) · Method: [ADR-008](control-room/04%20Decisions/ADR-008%20EV%20Charging%20Strategies.md)
+
 All findings, with exact numbers and caveats: [`control-room/06 Findings/`](control-room/06%20Findings/)
 
 ## Run it locally
