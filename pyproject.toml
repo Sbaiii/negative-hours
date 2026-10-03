@@ -11,6 +11,7 @@ dependencies = [
     "pandas>=3.0.6",
     "pyarrow>=25.0.1",
     "python-dotenv>=1.2.4",
+    "scipy>=1.18.1",
 ]
 
 [dependency-groups]
@@ -28,5 +29,5 @@ pythonpath = ["."]
 testpaths = ["tests"]
 
 [tool.ruff.lint.isort]
-# Local modules: the pipeline package and the notebooks' shared chart style.
-known-first-party = ["pipeline", "chart_style"]
+# Local modules: the pipeline and models packages and the notebooks' shared chart style.
+known-first-party = ["pipeline", "models", "chart_style"]
