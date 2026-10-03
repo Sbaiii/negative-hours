@@ -24,9 +24,9 @@ jobs:
     env:
       ENTSOE_API_KEY: ${{ secrets.ENTSOE_API_KEY }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
-      - uses: astral-sh/setup-uv@v6
+      - uses: astral-sh/setup-uv@v10
         with:
           enable-cache: true
 
@@ -47,7 +47,7 @@ jobs:
       # one under a unique key (a cache entry can't be overwritten).
       - name: Restore raw data
         id: raw-cache
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v6
         with:
           path: data/raw
           key: raw-${{ github.run_id }}-${{ github.run_attempt }}
@@ -74,7 +74,7 @@ jobs:
 
       - name: Save raw data
         if: ${{ !cancelled() }}
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v6
         with:
           path: data/raw
           key: raw-${{ github.run_id }}-${{ github.run_attempt }}
