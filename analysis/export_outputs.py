@@ -22,14 +22,41 @@ EXPORTS = {
 }
 
 
+def decimals(column: str) -> int:
+    """Decimal places for a numeric column, by what it measures."""
+    name = column.lower()
+    if "price" in name or "eur" in name:
+        return 2  # prices (EUR/MWh) and money (EUR)
+    if "mwh" in name:
+        return 3  # energy
+    if "hours" in name:
+        return 2  # durations: multiples of 0.25 h
+    return 4  # rates, shares, coverage, cycles and other ratios
+
+
+def rounded_select(con: duckdb.DuckDBPyConnection, table: str) -> str:
+    """SELECT list with every non-integer number cast to a fixed number of decimals.
+
+    Fixed decimals make the CSV text identical across rebuilds (no 0.1 vs
+    0.10000000000000001), so a daily refresh only commits real changes.
+    """
+    columns = []
+    for name, dtype, *_ in con.sql(f"describe {table}").fetchall():
+        if dtype in ("DOUBLE", "FLOAT") or dtype.startswith("DECIMAL"):
+            d = decimals(name)
+            columns.append(f"cast(round({name}, {d}) as decimal(38, {d})) as {name}")
+        else:
+            columns.append(name)
+    return ", ".join(columns)
+
+
 def main() -> None:
     OUTPUTS.mkdir(parents=True, exist_ok=True)
     with duckdb.connect(str(WAREHOUSE), read_only=True) as con:
         for table, order_by in EXPORTS.items():
             path = OUTPUTS / f"{table}.csv"
-            con.sql(
-                f"copy (select * from {table} order by {order_by}) to '{path}' (header)"
-            )
+            query = f"select {rounded_select(con, table)} from {table} order by {order_by}"
+            con.sql(f"copy ({query}) to '{path}' (header)")
             print(f"wrote {path.relative_to(REPO_ROOT)}")
 
 
