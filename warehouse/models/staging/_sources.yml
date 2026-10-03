@@ -3,10 +3,8 @@ sources:
     description: >
       Parquet files written by the extraction pipeline (pipeline/extract.py), one file
       per dataset, zone and UTC year. See control-room/03 Data/Data Dictionary.md.
-    config:
-      meta:
-        # Relative to warehouse/, where dbt is run from.
-        external_location: "read_parquet('../data/raw/{name}/**/*.parquet', hive_partitioning = true)"
+      Staging models read them with the `raw_source()` macro, which builds an absolute
+      path to data/raw from the project root.
     tables:
       - name: prices
         description: ENTSO-E day-ahead prices (EUR/MWh), one row per zone and period.

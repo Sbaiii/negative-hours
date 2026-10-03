@@ -5,7 +5,7 @@ with source as (
         ts_utc::timestamptz as ts_utc,
         generation_mw::double as generation_mw,
         resolution_minutes::integer as resolution_minutes
-    from {{ source('raw', 'generation') }}
+    from {{ raw_source('generation') }}
 ),
 
 -- ENTSO-E lists production types a zone doesn't have (e.g. Marine in Spain) and
