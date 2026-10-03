@@ -164,3 +164,91 @@ models:
         description: Monthly solar capture price / monthly baseload.
       - name: solar_coverage
         description: Share of the month's matched hours with a Solar row.
+
+  - name: fct_battery_arbitrage
+    description: >
+      Q3 — day-ahead arbitrage value of a 1 MW battery. One row per zone, local
+      calendar year and battery duration (1, 2, 4 h), summed from the daily LP
+      results (source battery.arbitrage_daily, ADR-007). Perfect foresight on
+      cleared day-ahead prices, at most one cycle a day: an upper bound for the
+      day-ahead market alone. Excludes intraday, balancing and capacity markets,
+      degradation and grid fees. Not a business case.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [zone, local_year, battery_duration_h]
+      - expression_is_true:
+          arguments:
+            expression: "is_partial_year = (partial_reason is not null)"
+      - expression_is_true:
+          arguments:
+            expression: "revenue_eur_per_mw >= heuristic_revenue_eur_per_mw and cycles <= days_solved"
+    columns:
+      - name: zone
+        description: Bidding zone code.
+        data_tests: [not_null]
+      - name: local_year
+        description: Calendar year in the zone's local time.
+        data_tests: [not_null]
+      - name: battery_duration_h
+        description: Energy capacity / power, hours (1 MW battery, so 2 h = 2 MWh).
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [1, 2, 4]
+                quote: false
+      - name: revenue_eur_per_mw
+        description: Sum of daily optimal revenue in the year, EUR per MW (year to date for the current year).
+        data_tests:
+          - not_null
+          - accepted_range:
+              arguments:
+                min_value: 0
+                max_value: 1000000
+      - name: avg_daily_revenue_eur_per_mw
+        description: revenue_eur_per_mw / days_solved.
+      - name: avg_spread_captured_eur_mwh
+        description: Energy-weighted average sell price minus average buy price, EUR/MWh (before losses).
+      - name: avg_sell_price
+        description: Average price of the energy sold, EUR/MWh.
+      - name: avg_buy_price
+        description: Average price of the energy bought, EUR/MWh (can be below 0).
+      - name: cycles
+        description: Full equivalent cycles in the year (energy drawn from storage / capacity). At most 1 per day.
+      - name: avg_daily_cycles
+        description: cycles / days_solved.
+      - name: charged_negative_mwh
+        description: Energy bought at negative prices, MWh per MW.
+      - name: negative_charging_revenue_eur
+        description: Money received for charging at negative prices, EUR per MW.
+      - name: negative_revenue_share
+        description: negative_charging_revenue_eur / revenue_eur_per_mw.
+        data_tests:
+          - accepted_range:
+              arguments:
+                min_value: 0
+                max_value: 1
+      - name: heuristic_revenue_eur_per_mw
+        description: Revenue of the rule of thumb (charge in the cheapest N hours, discharge in the dearest N), EUR per MW.
+      - name: lp_uplift
+        description: revenue_eur_per_mw / heuristic_revenue_eur_per_mw - 1. What optimisation adds over the rule of thumb.
+      - name: days_solved
+        description: Complete local days with prices (incomplete days are skipped).
+      - name: expected_hours
+        description: Hours in the local year (current year up to the end of the last price period), from int_zone_years.
+      - name: coverage
+        description: Hours of the solved days / expected_hours.
+        data_tests:
+          - accepted_range:
+              arguments:
+                min_value: 0.98
+                max_value: 1.0
+              config:
+                severity: warn
+                where: "not is_partial_year"
+      - name: is_partial_year
+        description: Current year, a known partial reason, or coverage < 0.98 (same rule as the other marts).
+        data_tests: [not_null]
+      - name: partial_reason
+        description: "'current_year' / 'pln_prices_excluded' / null."

@@ -1,6 +1,6 @@
 """Export small mart tables from the DuckDB warehouse to CSV (committed, unlike data/).
 
-Run after `dbt build` (from the repo root):
+Run after `dbt build` and `python -m models.run_battery` (from the repo root):
     uv run python analysis/export_outputs.py
 """
 
@@ -16,6 +16,7 @@ OUTPUTS = REPO_ROOT / "analysis" / "outputs"
 EXPORTS = {
     "fct_negative_hours": "zone, local_year",
     "fct_capture_prices": "zone, local_year",
+    "fct_battery_arbitrage": "zone, local_year, battery_duration_h",
 }
 
 

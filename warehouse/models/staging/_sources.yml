@@ -12,3 +12,49 @@ sources:
         description: ENTSO-E actual generation per production type (MW, "Actual Aggregated" only), long format.
       - name: load
         description: ENTSO-E actual total load (MW), one row per zone and period.
+
+  - name: battery
+    schema: battery
+    description: >
+      Daily results of the battery arbitrage LP (models/run_battery.py, ADR-007),
+      written into the warehouse by `uv run python -m models.run_battery`. Run it
+      after `dbt build` (it reads int_prices_local), then build fct_battery_arbitrage.
+    tables:
+      - name: arbitrage_daily
+        description: >
+          One row per zone, local day and battery duration (1, 2, 4 h): the optimal
+          day-ahead schedule of a 1 MW battery (perfect foresight on cleared prices),
+          plus a cheapest-N / dearest-N heuristic for comparison. Incomplete price
+          days are skipped.
+        data_tests:
+          - unique_combination:
+              arguments:
+                columns: [zone, local_date, battery_duration_h]
+          - expression_is_true:
+              arguments:
+                expression: "revenue_eur_per_mw >= -0.001 and cycles <= 1.000001"
+          - expression_is_true:
+              arguments:
+                # The LP's optimum can't be beaten by a feasible rule of thumb.
+                expression: "revenue_eur_per_mw >= heuristic_revenue_eur_per_mw - 0.001"
+          - expression_is_true:
+              arguments:
+                # Never charging and discharging in the same period.
+                expression: "simultaneous_mwh < 0.000001"
+        columns:
+          - name: zone
+            data_tests: [not_null]
+          - name: local_date
+            description: Local calendar day the battery is scheduled over (empty at both ends).
+            data_tests: [not_null]
+          - name: battery_duration_h
+            description: Energy capacity / power (h). Power is 1 MW, so 2 h = 2 MWh.
+            data_tests:
+              - accepted_values:
+                  arguments:
+                    values: [1, 2, 4]
+                    quote: false
+          - name: revenue_eur_per_mw
+            description: Day-ahead revenue of the optimal schedule, EUR per MW of power.
+          - name: heuristic_revenue_eur_per_mw
+            description: Revenue of the cheapest-N / dearest-N rule, EUR per MW.
