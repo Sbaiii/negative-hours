@@ -15,6 +15,7 @@ OUTPUTS = REPO_ROOT / "analysis" / "outputs"
 # table -> sort order
 EXPORTS = {
     "fct_negative_hours": "zone, local_year",
+    "fct_capture_prices": "zone, local_year",
 }
 
 

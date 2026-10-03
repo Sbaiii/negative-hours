@@ -59,3 +59,51 @@ models:
           - accepted_values:
               arguments:
                 values: ['current_year', 'pln_prices_excluded']
+
+  - name: int_energy_hourly
+    description: >
+      Prices and generation per zone on a common hourly grid (ADR-006): the hourly
+      price is the duration-weighted mean of the periods in the hour, generation is
+      energy (MWh = MW x duration_h) summed within the hour. Only hours with both a
+      price and some generation are kept.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [zone, hour_utc]
+    columns:
+      - name: zone
+        data_tests: [not_null]
+      - name: hour_utc
+        description: Start of the hour, UTC.
+        data_tests: [not_null]
+      - name: hour_local
+        description: Start of the hour on the zone's local wall clock (repeats at the autumn DST change).
+      - name: local_date
+        description: Local calendar date.
+      - name: local_year
+        description: Local calendar year (ADR-005).
+        data_tests: [not_null]
+      - name: price_eur_mwh
+        description: Duration-weighted mean day-ahead price in the hour, EUR/MWh.
+        data_tests: [not_null]
+      - name: price_hours_covered
+        description: Fraction of the hour with a price (1.0 = complete).
+        data_tests:
+          - accepted_range:
+              arguments:
+                min_value: 0.25
+                max_value: 1.0
+      - name: generation_hours_covered
+        description: Fraction of the hour with generation periods (1.0 = complete).
+        data_tests:
+          - accepted_range:
+              arguments:
+                min_value: 0.25
+                max_value: 1.0
+      - name: solar_mwh
+        description: Solar energy in the hour as reported to ENTSO-E (MWh); null if no Solar row.
+      - name: wind_mwh
+        description: Wind onshore + offshore energy in the hour (MWh); null if no wind row.
+      - name: total_generation_mwh
+        description: Energy of all reported production types in the hour (MWh).
+        data_tests: [not_null]

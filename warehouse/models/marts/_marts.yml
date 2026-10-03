@@ -61,3 +61,79 @@ models:
           - accepted_values:
               arguments:
                 values: ['current_year', 'pln_prices_excluded']
+
+  - name: fct_capture_prices
+    description: >
+      Q2 — solar and wind capture prices. One row per zone and local calendar year,
+      from the hourly grid in int_energy_hourly (ADR-006). Capture price =
+      sum(price x MWh) / sum(MWh); capture rate = capture price / baseload price.
+      Generation is **as reported to ENTSO-E**: solar may miss rooftop PV in some
+      zones, which affects solar_share more than the capture rate (see Data Dictionary).
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [zone, local_year]
+      - expression_is_true:
+          arguments:
+            expression: "is_partial_year = (partial_reason is not null)"
+    columns:
+      - name: zone
+        description: Bidding zone code.
+        data_tests: [not_null]
+      - name: local_year
+        description: Calendar year in the zone's local time.
+        data_tests: [not_null]
+      - name: baseload_price
+        description: Time-weighted mean day-ahead price over the matched hours, EUR/MWh.
+        data_tests: [not_null]
+      - name: solar_mwh
+        description: Solar energy in the year as reported to ENTSO-E, MWh. Null if solar_coverage < 0.95.
+      - name: solar_capture_price
+        description: Solar-weighted average price, EUR/MWh.
+      - name: solar_capture_rate
+        description: solar_capture_price / baseload_price. Below 1 = solar earns less than the average hour.
+        data_tests:
+          - accepted_range:
+              arguments:
+                min_value: 0
+                max_value: 2
+      - name: solar_share
+        description: solar_mwh / total_generation_mwh, as reported to ENTSO-E (not national consumption).
+      - name: wind_mwh
+        description: Wind onshore + offshore energy, MWh. Null if wind_coverage < 0.95.
+      - name: wind_capture_price
+        description: Wind-weighted average price, EUR/MWh.
+      - name: wind_capture_rate
+        description: wind_capture_price / baseload_price.
+        data_tests:
+          - accepted_range:
+              arguments:
+                min_value: 0
+                max_value: 2
+      - name: wind_share
+        description: wind_mwh / total_generation_mwh, as reported to ENTSO-E.
+      - name: total_generation_mwh
+        description: Energy of all reported production types in the matched hours, MWh.
+      - name: matched_hours
+        description: Hours with both a price and generation.
+      - name: expected_hours
+        description: Hours in the local year (current year up to the end of the last price period), from int_zone_years.
+      - name: coverage
+        description: matched_hours / expected_hours.
+        data_tests:
+          - accepted_range:
+              arguments:
+                min_value: 0.95
+                max_value: 1.0
+              config:
+                severity: warn
+                where: "not is_partial_year"
+      - name: solar_coverage
+        description: Share of matched hours with a Solar row. Solar metrics are null below 0.95.
+      - name: wind_coverage
+        description: Share of matched hours with a wind row. Wind metrics are null below 0.95.
+      - name: is_partial_year
+        description: Current year, a known partial reason, or coverage < 0.98 (same rule as fct_negative_hours).
+        data_tests: [not_null]
+      - name: partial_reason
+        description: "'current_year' / 'pln_prices_excluded' / null."
