@@ -59,6 +59,17 @@ days as (
     select distinct zone, local_date, timezone from periods
 ),
 
+-- First and last instant with prices per zone: a window must lie inside them,
+-- or a strategy would choose from fewer hours than it is allowed.
+data_bounds as (
+    select
+        zone,
+        min(ts_utc) as data_start,
+        max(ts_utc + to_microseconds(cast(duration_h * 3600 * 1000000 as bigint))) as data_end
+    from periods
+    group by zone
+),
+
 -- Allowed charging window per day and strategy, as UTC instants.
 windows as (
     select zone, local_date, 'immediate' as strategy,
@@ -87,6 +98,10 @@ best as (
         windows.strategy,
         min(blocks.cost_eur) as cost_eur
     from windows
+    inner join data_bounds
+        on data_bounds.zone = windows.zone
+        and windows.window_start >= data_bounds.data_start
+        and (windows.strategy = 'immediate' or windows.window_end <= data_bounds.data_end)
     inner join blocks
         on blocks.zone = windows.zone
         and blocks.start_utc >= windows.window_start
@@ -95,8 +110,9 @@ best as (
     group by windows.zone, windows.local_date, windows.strategy
 ),
 
--- Keep only days where all three strategies have prices (drops e.g. the last
--- day, whose overnight window needs tomorrow's prices).
+-- Keep only days where all three strategies have their whole window priced
+-- (drops the last day, whose night needs tomorrow's prices, and 2019-01-01 in
+-- CET zones, whose prices start at 01:00).
 daily as (
     select
         zone,
