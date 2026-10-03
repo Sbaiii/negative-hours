@@ -6,6 +6,7 @@ turn it into a table; `extract_zone_year` handles skipping, writing and logging.
 
 import logging
 import os
+import re
 import sys
 import time
 from collections.abc import Callable
@@ -36,6 +37,18 @@ class Dataset:
     name: str  # also the folder name under data/raw/
     # (client, zone, start, end) -> table with ts_utc, zone, ..., resolution_minutes
     fetch: Callable[[EntsoePandasClient, str, pd.Timestamp, pd.Timestamp], pd.DataFrame]
+
+
+# requests puts the full URL, token included, in its error messages.
+TOKEN_IN_URL = re.compile(r"(securityToken=)[^&\s'\"]+")
+
+
+class RedactingFormatter(logging.Formatter):
+    """Log formatter that replaces the ENTSO-E token with *** in every line,
+    tracebacks included, so it never reaches a terminal or a CI log."""
+
+    def format(self, record: logging.LogRecord) -> str:
+        return TOKEN_IN_URL.sub(r"\1***", super().format(record))
 
 
 def get_api_key() -> str:

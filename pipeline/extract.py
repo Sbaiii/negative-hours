@@ -23,7 +23,12 @@ import pandas as pd
 import requests
 from entsoe import EntsoePandasClient
 
-from pipeline.common import Dataset, extract_zone_year, get_api_key
+from pipeline.common import (
+    Dataset,
+    RedactingFormatter,
+    extract_zone_year,
+    get_api_key,
+)
 from pipeline.config import DEFAULT_START_YEAR, REQUEST_TIMEOUT_SECONDS, ZONES
 from pipeline.generation import GENERATION
 from pipeline.load import LOAD
@@ -71,11 +76,13 @@ def parse_args() -> argparse.Namespace:
 
 
 def main() -> int:
-    logging.basicConfig(
-        level=logging.INFO,
-        format="%(asctime)s %(levelname)-7s %(message)s",
-        datefmt="%H:%M:%S",
+    handler = logging.StreamHandler()
+    handler.setFormatter(
+        RedactingFormatter(
+            "%(asctime)s %(levelname)-7s %(message)s", datefmt="%H:%M:%S"
+        )
     )
+    logging.basicConfig(level=logging.INFO, handlers=[handler])
     args = parse_args()
     client = EntsoePandasClient(api_key=get_api_key(), timeout=REQUEST_TIMEOUT_SECONDS)
 

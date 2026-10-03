@@ -1,5 +1,8 @@
 """End-to-end checks of one zone-year download, against a fake ENTSO-E client."""
 
+import logging
+import sys
+
 import pandas as pd
 import pytest
 import requests
@@ -147,3 +150,20 @@ def test_prices_skip_force_and_current_year():
     common.extract_zone_year(PRICES, client, "ES", this_year, force=False)
     common.extract_zone_year(PRICES, client, "ES", this_year, force=False)
     assert client.calls == calls + 2  # never skipped
+
+
+def test_log_lines_never_show_the_api_token():
+    formatter = common.RedactingFormatter("%(message)s")
+    url = "https://web-api.tp.entsoe.eu/api?securityToken=abc-123&documentType=A44"
+    error = requests.HTTPError(f"503 Server Error for url: {url}")
+    record = logging.LogRecord(
+        "extract", logging.ERROR, "", 0, "failed: %s", (error,), None
+    )
+    try:
+        raise error
+    except requests.HTTPError:
+        record.exc_info = sys.exc_info()
+
+    line = formatter.format(record)
+    assert "abc-123" not in line
+    assert "securityToken=***&documentType=A44" in line
