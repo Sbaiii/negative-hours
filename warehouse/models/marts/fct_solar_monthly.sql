@@ -1,7 +1,7 @@
 -- Solar capture price per zone and LOCAL calendar month. Used to test where a
 -- year's capture rate comes from: which months were expensive vs which were sunny.
 -- Same definitions as fct_capture_prices (ADR-006): baseload over all price
--- periods of the month, capture price over matched hours.
+-- periods of the month, capture price over matched generation periods.
 
 with prices as (
     select
@@ -19,8 +19,9 @@ solar as (
         cast(date_trunc('month', local_date) as date) as local_month,
         sum(solar_mwh) as solar_mwh,
         sum(price_eur_mwh * solar_mwh) / nullif(sum(solar_mwh), 0) as solar_capture_price,
-        count(solar_mwh) / count(*) as solar_coverage
-    from {{ ref('int_energy_hourly') }}
+        coalesce(sum(duration_h) filter (where solar_mwh is not null), 0) / sum(duration_h)
+            as solar_coverage
+    from {{ ref('int_energy_periods') }}
     group by zone, local_month
 )
 
@@ -29,7 +30,7 @@ select
     prices.local_year,
     prices.local_month,
     round(prices.baseload_price, 2) as baseload_price,
-    round(solar.solar_mwh, 1) as solar_mwh,
+    round(solar.solar_mwh, 3) as solar_mwh,
     round(solar.solar_capture_price, 2) as solar_capture_price,
     round(solar.solar_capture_price / prices.baseload_price, 4) as solar_capture_rate,
     round(solar.solar_coverage, 4) as solar_coverage

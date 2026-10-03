@@ -3,13 +3,13 @@
 -- on the day-ahead market. Capture rate = capture price / baseload price.
 -- Generation is "as reported to ENTSO-E" (may miss rooftop PV in some zones).
 
-with hours as (
-    select * from {{ ref('int_energy_hourly') }}
+with periods as (
+    select * from {{ ref('int_energy_periods') }}
 ),
 
 -- Baseload = time-weighted mean over ALL price periods of the zone-year, the same
 -- definition as fct_negative_hours.avg_price (tested). Capture prices below use
--- only the matched hours, where generation is known.
+-- only the matched generation periods, where generation is known (ADR-006).
 baseload as (
     select
         zone,
@@ -27,25 +27,27 @@ by_year as (
     select
         zone,
         local_year,
-        count(*) as matched_hours,
+        sum(duration_h) as matched_hours,
 
         sum(solar_mwh) as solar_mwh,
         sum(price_eur_mwh * solar_mwh) / nullif(sum(solar_mwh), 0) as solar_capture_price,
-        count(solar_mwh) / count(*) as solar_coverage,
+        coalesce(sum(duration_h) filter (where solar_mwh is not null), 0) / sum(duration_h)
+            as solar_coverage,
 
         sum(wind_mwh) as wind_mwh,
         sum(price_eur_mwh * wind_mwh) / nullif(sum(wind_mwh), 0) as wind_capture_price,
-        count(wind_mwh) / count(*) as wind_coverage,
+        coalesce(sum(duration_h) filter (where wind_mwh is not null), 0) / sum(duration_h)
+            as wind_coverage,
 
         sum(total_generation_mwh) as total_generation_mwh
-    from hours
+    from periods
     group by zone, local_year
 ),
 
 metrics as (
     select
         *,
-        -- A technology's metrics need its series in at least 95% of matched hours
+        -- A technology's metrics need its series in at least 95% of the matched time
         -- (ADR-006). Only PL 2019-2020 solar fails this (reported from 2020-04-10).
         solar_coverage >= 0.95 as solar_ok,
         wind_coverage >= 0.95 as wind_ok
@@ -80,6 +82,7 @@ select
     round(metrics.wind_coverage, 4) as wind_coverage,
     zone_years.known_partial_reason is not null
         or metrics.matched_hours / zone_years.expected_hours < 0.98 as is_partial_year,
-    zone_years.known_partial_reason as partial_reason
+    zone_years.known_partial_reason as partial_reason,
+    zone_years.data_through_date
 from metrics
 inner join zone_years using (zone, local_year)
