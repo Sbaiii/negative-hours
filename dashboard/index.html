@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Negative Hours Dashboard</title>
+  <meta name="description" content="European day-ahead electricity market, updated daily: negative-price hours, solar capture rate, battery arbitrage value and EV smart-charging savings for 8 bidding zones.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%232a78d6'/%3E%3Cpath d='M5 12h6v8h5V9h5v14h6' stroke='white' stroke-width='3' fill='none'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="page-header">
+    <div class="wrap header-row">
+      <div>
+        <h1>Negative Hours</h1>
+        <p class="lede">Europe's day-ahead electricity market, updated daily.</p>
+      </div>
+      <button type="button" id="theme-toggle" class="theme-toggle" aria-label="Switch to dark theme">Dark</button>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="controls" aria-label="Zone">
+      <label for="zone-select">Bidding zone</label>
+      <select id="zone-select"></select>
+      <p class="updated">Last updated <time id="updated">…</time></p>
+    </section>
+
+    <p id="status" class="status" role="status"></p>
+
+    <section aria-labelledby="kpi-title">
+      <h2 id="kpi-title">Year to date</h2>
+      <p id="kpi-period" class="muted"></p>
+      <div id="kpis" class="kpis" aria-live="polite"></div>
+    </section>
+
+    <section aria-labelledby="curve-title">
+      <h2 id="curve-title">Latest day-ahead prices</h2>
+      <p id="curve-subtitle" class="muted"></p>
+      <figure class="chart">
+        <div id="curve"></div>
+        <figcaption class="muted">Local time. Price per MWh, cleared on the day-ahead market. Below 0 = producers pay to deliver.</figcaption>
+      </figure>
+      <details class="table-view">
+        <summary>Show the prices as a table</summary>
+        <div class="table-scroll"><table id="curve-table"></table></div>
+      </details>
+    </section>
+
+    <section aria-labelledby="all-title">
+      <h2 id="all-title">All zones, year to date</h2>
+      <div class="table-scroll"><table id="all-zones"></table></div>
+    </section>
+
+    <section aria-labelledby="notebooks-title">
+      <h2 id="notebooks-title">The analysis behind it</h2>
+      <ul class="links">
+        <li><a href="https://github.com/Sbaiii/negative-hours/blob/main/analysis/q1_negative_hours.ipynb">Q1 · How often are prices negative?</a></li>
+        <li><a href="https://github.com/Sbaiii/negative-hours/blob/main/analysis/q2_capture_prices.ipynb">Q2 · Does solar cannibalise its own value?</a></li>
+        <li><a href="https://github.com/Sbaiii/negative-hours/blob/main/analysis/q3_battery_arbitrage.ipynb">Q3 · Where is a battery worth the most?</a></li>
+        <li><a href="https://github.com/Sbaiii/negative-hours/blob/main/analysis/q4_ev_charging.ipynb">Q4 · When should EVs charge?</a></li>
+      </ul>
+    </section>
+  </main>
+
+  <footer class="wrap footer">
+    <h2>How to read these numbers</h2>
+    <ul>
+      <li><strong>Year to date</strong> runs from 1 January to the last day with complete data for all four figures, and is compared with the same dates last year.</li>
+      <li><strong>Negative hours:</strong> time with a day-ahead price below 0 (15-minute periods count as a quarter hour).</li>
+      <li><strong>Solar capture rate:</strong> what a MWh of solar earned as a share of the average price. Solar output as reported to ENTSO-E; for the Netherlands that covers about 2% of Dutch solar, so its rate is indicative only.</li>
+      <li><strong>Battery revenue:</strong> a 1 MW / 2 MWh battery, at most one cycle a day, 88% round trip, with perfect foresight of cleared day-ahead prices. An upper bound for day-ahead arbitrage only: excludes intraday, balancing and capacity markets, degradation and grid fees. Not investment advice.</li>
+      <li><strong>EV saving:</strong> 10 kWh a day at 7 kW, charged in the cheapest block of each day instead of at 18:00. Wholesale price only: no retail margin, taxes or grid fees.</li>
+    </ul>
+    <p>Data: <a href="https://transparency.entsoe.eu/">ENTSO-E Transparency Platform</a>. Code and method: <a href="https://github.com/Sbaiii/negative-hours">github.com/Sbaiii/negative-hours</a>. Built by <a href="https://sbaiii.com">Abdellah Sbai</a>.</p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

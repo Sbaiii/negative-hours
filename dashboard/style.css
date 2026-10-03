@@ -1,0 +1,130 @@
+/* Colour tokens: light by default, dark from the system setting or the toggle. */
+:root {
+  color-scheme: light;
+  --surface: #fcfcfb;
+  --surface-raised: #ffffff;
+  --ink: #0b0b0b;
+  --ink-secondary: #52514e;
+  --ink-muted: #6b6a65;
+  --grid: #e1e0d9;
+  --axis: #c3c2b7;
+  --border: #e1e0d9;
+  --link: #1f5fae;
+  --up: #1d6b3a;
+  --down: #a23a2a;
+  --focus: #2a78d6;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --surface: #141413;
+    --surface-raised: #1d1d1b;
+    --ink: #f2f1ed;
+    --ink-secondary: #c9c7c0;
+    --ink-muted: #a3a19a;
+    --grid: #33322f;
+    --axis: #4a4945;
+    --border: #33322f;
+    --link: #8ab8f0;
+    --up: #7fcf9b;
+    --down: #f0a090;
+    --focus: #8ab8f0;
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --surface: #141413;
+  --surface-raised: #1d1d1b;
+  --ink: #f2f1ed;
+  --ink-secondary: #c9c7c0;
+  --ink-muted: #a3a19a;
+  --grid: #33322f;
+  --axis: #4a4945;
+  --border: #33322f;
+  --link: #8ab8f0;
+  --up: #7fcf9b;
+  --down: #f0a090;
+  --focus: #8ab8f0;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--surface);
+  color: var(--ink);
+  font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+}
+
+.wrap { max-width: 1040px; margin: 0 auto; padding: 0 16px; }
+
+a { color: var(--link); }
+a:focus-visible, button:focus-visible, select:focus-visible, summary:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+h1 { font-size: 1.75rem; margin: 0; letter-spacing: -0.01em; }
+h2 { font-size: 1.2rem; margin: 2rem 0 0.25rem; }
+.lede { margin: 0.25rem 0 0; color: var(--ink-secondary); }
+.muted { color: var(--ink-muted); margin: 0 0 0.75rem; font-size: 0.9rem; }
+
+.page-header { border-bottom: 1px solid var(--border); padding: 1.25rem 0 1rem; }
+.header-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; }
+
+.theme-toggle, select {
+  font: inherit;
+  color: var(--ink);
+  background: var(--surface-raised);
+  border: 1px solid var(--axis);
+  border-radius: 6px;
+  padding: 0.35rem 0.75rem;
+}
+.theme-toggle { cursor: pointer; font-size: 0.9rem; }
+
+.controls { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 0.75rem; margin-top: 1.25rem; }
+.controls label { font-weight: 600; }
+.updated { margin: 0 0 0 auto; color: var(--ink-muted); font-size: 0.9rem; }
+
+.status:empty { display: none; }
+.status { color: var(--down); }
+
+/* KPI tiles: 4 across on wide screens, 2 on tablets, 1 on phones. */
+.kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+@media (max-width: 860px) { .kpis { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 480px) { .kpis { grid-template-columns: 1fr; } }
+
+.tile {
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.9rem 1rem;
+  min-width: 0;
+}
+.tile h3 { font-size: 0.9rem; font-weight: 600; color: var(--ink-secondary); margin: 0; }
+.tile .value { font-size: 1.75rem; font-weight: 700; margin: 0.25rem 0; font-variant-numeric: tabular-nums; }
+.tile .compare { font-size: 0.875rem; color: var(--ink-secondary); margin: 0; }
+.tile .note { font-size: 0.8rem; color: var(--ink-muted); margin: 0.4rem 0 0; }
+
+.chart { margin: 0; }
+.chart svg { display: block; width: 100%; height: auto; }
+.chart figcaption { margin-top: 0.4rem; }
+
+.table-view { margin-top: 0.75rem; }
+.table-view summary { cursor: pointer; color: var(--link); }
+.table-scroll { overflow-x: auto; max-width: 100%; }
+table { border-collapse: collapse; font-size: 0.9rem; font-variant-numeric: tabular-nums; min-width: 100%; }
+th, td { padding: 0.35rem 0.6rem; border-bottom: 1px solid var(--border); text-align: right; white-space: nowrap; }
+th:first-child, td:first-child { text-align: left; }
+thead th { color: var(--ink-secondary); font-weight: 600; }
+tr.selected td { font-weight: 700; }
+.swatch { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: baseline; }
+
+.links { padding-left: 1.2rem; }
+.links li { margin: 0.3rem 0; }
+
+.footer { border-top: 1px solid var(--border); margin-top: 2.5rem; padding-top: 0.5rem; padding-bottom: 2rem; color: var(--ink-secondary); font-size: 0.875rem; }
+.footer h2 { font-size: 1rem; }
+.footer ul { padding-left: 1.2rem; }
