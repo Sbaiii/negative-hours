@@ -18,15 +18,15 @@ Negative prices are a symptom. The value is in the daily spread between cheap mi
 ## Three recommendations
 
 - **Solar developer:** plan merchant revenue on about half the average price, not the full price, since solar captured only 51% to 59% of it in 5 zones in 2025.
-- **Battery investor:** rank sites by the evening over midday price spread, not by the count of negative hours: Poland had 310 negative hours to the Netherlands' 584 in 2025 and still earned more (€85.6k vs €76.1k per MW).
+- **Battery investor:** rank sites by the evening over midday price spread, not by the count of negative hours: Poland had 310 negative hours to the Netherlands' 584 in 2025 and still earned more (€85.6k vs €76.1k per MW), because its battery captured a wider average daily spread (131.90 vs 115.64 €/MWh).
 - **EV fleet or charging operator:** move flexible charging from the night to the midday window, since in 2025 overnight charging delivered only 23% to 67% of the saving that charging in the cheapest hours achieved.
 
 ## How confident are we
 
 - **Negative hours match official statistics:** Germany 2019 to 2024 and France 2023 to 2025 exactly, Spain 2025 within one hour (556 here, 555 reported by pv-magazine).
-- **Solar value:** Germany's 2024 solar capture price (46.23 €/MWh) matches the published German solar market value to the cent.
+- **Solar value:** Germany's 2024 solar capture price (46.23 €/MWh) matches the published German solar market value to within one cent (46.24).
 - **Battery revenue:** Germany 2024 (€66k per MW) is the same order of magnitude as a published day-ahead-only estimate (about €70k, Gridcog).
-- **Main caveats:** solar output is as reported to ENTSO-E (France 6% below the national figure; the Netherlands is indicative only). Only the day-ahead market is modelled, with perfect foresight, so battery figures are an upper bound. EV figures are wholesale prices only, without taxes, grid fees or retail margins. North Italy's market accepts no offers below 0 €/MWh, so its price can never go negative.
+- **Main caveats:** solar output is as reported to ENTSO-E (France 6% below the national figure; the Netherlands is indicative only). Only the day-ahead market is modelled, with perfect foresight, so battery figures are an upper bound for day-ahead trading alone; real batteries also earn from intraday and balancing markets. EV figures are wholesale prices only, without taxes, grid fees or retail margins. North Italy's market accepts no offers below 0 €/MWh, so its price can never go negative.
 
 ## Open question
 

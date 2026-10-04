@@ -203,7 +203,7 @@ Every non-trivial choice (tool, metric definition, scope cut) has a decision rec
 ## Validation
 
 - **Negative hours match official statistics:** Germany 2019 to 2024 and France 2023 to 2025 exactly (published German counts, RTE), Spain 2025 within one hour of pv-magazine's count.
-- **Solar value:** Germany's 2024 solar capture price matches the published German solar market value to the cent; France's solar output on ENTSO-E is checked against RTE's national figure.
+- **Solar value:** Germany's 2024 solar capture price matches the published German solar market value to within one cent (46.24); France's solar output on ENTSO-E is checked against RTE's national figure.
 - **Battery revenue:** Germany 2024 is the same order of magnitude as a published day-ahead-only estimate (Gridcog).
 - **Automated checks:** dbt tests on every model (uniqueness, ranges, completeness, hourly vs quarter-hour counts), and `pytest` checks that every number in this README, the finding notes and the exec memo matches the frozen snapshot in [`analysis/outputs/snapshots/`](analysis/outputs/snapshots/).
 
@@ -217,4 +217,4 @@ Every non-trivial choice (tool, metric definition, scope cut) has a decision rec
 
 ---
 
-Built by [Abdellah Sbai](https://sbaiii.com)
+Built by [Abdellah Sbai](https://sbaiii.com) · [LinkedIn](https://www.linkedin.com/in/sbaiii/)
