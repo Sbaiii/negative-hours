@@ -62,24 +62,24 @@ select
 
     case when solar_ok then round(metrics.solar_mwh, 3) end as solar_mwh,
     case when solar_ok then round(metrics.solar_capture_price, 2) end as solar_capture_price,
-    case when solar_ok then round(metrics.solar_capture_price / metrics.baseload_price, 4) end
+    case when solar_ok then round(metrics.solar_capture_price / metrics.baseload_price, 6) end
         as solar_capture_rate,
-    case when solar_ok then round(metrics.solar_mwh / metrics.total_generation_mwh, 4) end
+    case when solar_ok then round(metrics.solar_mwh / metrics.total_generation_mwh, 6) end
         as solar_share,
 
     case when wind_ok then round(metrics.wind_mwh, 3) end as wind_mwh,
     case when wind_ok then round(metrics.wind_capture_price, 2) end as wind_capture_price,
-    case when wind_ok then round(metrics.wind_capture_price / metrics.baseload_price, 4) end
+    case when wind_ok then round(metrics.wind_capture_price / metrics.baseload_price, 6) end
         as wind_capture_rate,
-    case when wind_ok then round(metrics.wind_mwh / metrics.total_generation_mwh, 4) end
+    case when wind_ok then round(metrics.wind_mwh / metrics.total_generation_mwh, 6) end
         as wind_share,
 
     round(metrics.total_generation_mwh, 3) as total_generation_mwh,
     metrics.matched_hours,
     zone_years.expected_hours,
-    round(metrics.matched_hours / zone_years.expected_hours, 4) as coverage,
-    round(metrics.solar_coverage, 4) as solar_coverage,
-    round(metrics.wind_coverage, 4) as wind_coverage,
+    round(metrics.matched_hours / zone_years.expected_hours, 6) as coverage,
+    round(metrics.solar_coverage, 6) as solar_coverage,
+    round(metrics.wind_coverage, 6) as wind_coverage,
     zone_years.known_partial_reason is not null
         or metrics.matched_hours / zone_years.expected_hours < 0.98 as is_partial_year,
     zone_years.known_partial_reason as partial_reason,

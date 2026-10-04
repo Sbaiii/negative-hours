@@ -32,7 +32,7 @@ select
     round(prices.baseload_price, 2) as baseload_price,
     round(solar.solar_mwh, 3) as solar_mwh,
     round(solar.solar_capture_price, 2) as solar_capture_price,
-    round(solar.solar_capture_price / prices.baseload_price, 4) as solar_capture_rate,
-    round(solar.solar_coverage, 4) as solar_coverage
+    round(solar.solar_capture_price / prices.baseload_price, 6) as solar_capture_rate,
+    round(solar.solar_coverage, 6) as solar_coverage
 from prices
 left join solar using (zone, local_month)

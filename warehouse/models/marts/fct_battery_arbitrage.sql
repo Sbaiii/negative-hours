@@ -51,13 +51,13 @@ select
     round(by_year.negative_charging_revenue, 0) as negative_charging_revenue_eur,
     -- Share of the year's revenue that was paid to the battery for charging at
     -- negative prices (the rest comes from selling above the purchase price).
-    round(by_year.negative_charging_revenue / nullif(by_year.revenue, 0), 4)
+    round(by_year.negative_charging_revenue / nullif(by_year.revenue, 0), 6)
         as negative_revenue_share,
     round(by_year.heuristic_revenue, 0) as heuristic_revenue_eur_per_mw,
-    round(by_year.revenue / nullif(by_year.heuristic_revenue, 0) - 1, 4) as lp_uplift,
+    round(by_year.revenue / nullif(by_year.heuristic_revenue, 0) - 1, 6) as lp_uplift,
     by_year.days_solved,
     zone_years.expected_hours,
-    round(by_year.solved_hours / zone_years.expected_hours, 4) as coverage,
+    round(by_year.solved_hours / zone_years.expected_hours, 6) as coverage,
     zone_years.known_partial_reason is not null
         or by_year.solved_hours / zone_years.expected_hours < 0.98 as is_partial_year,
     zone_years.known_partial_reason as partial_reason,

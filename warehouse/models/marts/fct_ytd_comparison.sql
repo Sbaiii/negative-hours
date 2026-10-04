@@ -89,15 +89,15 @@ select
     case when solar.solar_coverage >= 0.95 then round(solar.solar_capture_price, 2) end
         as solar_capture_price,
     case when solar.solar_coverage >= 0.95
-        then round(solar.solar_capture_price / prices.baseload_price, 4) end as solar_capture_rate,
+        then round(solar.solar_capture_price / prices.baseload_price, 6) end as solar_capture_rate,
     round(battery.battery_revenue_eur_per_mw, 0) as battery_revenue_eur_per_mw,
     ev.ev_days,
     round(ev.immediate, 2) as ev_immediate_eur,
     round(ev.overnight, 2) as ev_overnight_eur,
     round(ev.smart, 2) as ev_smart_eur,
     round(ev.immediate - ev.smart, 2) as ev_smart_saving_eur,
-    round((ev.immediate - ev.smart) / nullif(ev.immediate, 0), 4) as ev_smart_saving_share,
-    round((ev.immediate - ev.overnight) / nullif(ev.immediate, 0), 4) as ev_overnight_saving_share,
+    round((ev.immediate - ev.smart) / nullif(ev.immediate, 0), 6) as ev_smart_saving_share,
+    round((ev.immediate - ev.overnight) / nullif(ev.immediate, 0), 6) as ev_overnight_saving_share,
     coalesce(zone_years.known_partial_reason = 'pln_prices_excluded', false) as is_partial_window,
     case when zone_years.known_partial_reason = 'pln_prices_excluded'
         then 'pln_prices_excluded' end as partial_reason

@@ -51,7 +51,7 @@ select
     by_period.zero_or_negative_period_hours,
     by_period.covered_hours,
     zone_years.expected_hours,
-    round(by_period.covered_hours / zone_years.expected_hours, 4) as completeness,
+    round(by_period.covered_hours / zone_years.expected_hours, 6) as completeness,
     round(by_period.min_price, 2) as min_price,
     round(by_period.avg_price, 2) as avg_price,
     round(by_period.avg_price_negative_periods, 2) as avg_price_negative_periods,

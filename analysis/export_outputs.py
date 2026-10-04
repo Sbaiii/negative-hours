@@ -19,6 +19,7 @@ EXPORTS = {
     "fct_battery_arbitrage": "zone, local_year, battery_duration_h",
     "fct_hourly_profile": "zone, local_year, season, local_hour",
     "fct_ev_charging": "zone, local_year, season",
+    "fct_ytd_comparison": "zone, local_year",
 }
 
 
@@ -31,7 +32,9 @@ def decimals(column: str) -> int:
         return 3  # energy
     if "hours" in name:
         return 2  # durations: multiples of 0.25 h
-    return 4  # rates, shares, coverage, cycles and other ratios
+    # Rates, shares, coverage, cycles and other ratios: 6 decimals, so a percentage
+    # rounded to 1 decimal from the CSV can't land on a rounding boundary.
+    return 6
 
 
 def rounded_select(con: duckdb.DuckDBPyConnection, table: str) -> str:

@@ -37,8 +37,8 @@ select
     round(smart * 365, 2) as smart_eur_per_year,
     round((immediate - overnight) * 365, 2) as overnight_savings_eur_per_year,
     round((immediate - smart) * 365, 2) as smart_savings_eur_per_year,
-    round((immediate - overnight) / nullif(immediate, 0), 4) as overnight_savings_share,
-    round((immediate - smart) / nullif(immediate, 0), 4) as smart_savings_share,
+    round((immediate - overnight) / nullif(immediate, 0), 6) as overnight_savings_share,
+    round((immediate - smart) / nullif(immediate, 0), 6) as smart_savings_share,
     -- Average wholesale price paid per MWh charged.
     round(immediate * 1000 / {{ energy_kwh }}, 2) as immediate_price_eur_mwh,
     round(overnight * 1000 / {{ energy_kwh }}, 2) as overnight_price_eur_mwh,

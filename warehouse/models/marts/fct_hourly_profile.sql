@@ -70,7 +70,7 @@ select
     by_hour.local_hour,
     round(by_hour.mean_price, 2) as mean_price,
     round(medians.median_price, 2) as median_price,
-    round(by_hour.share_at_or_below_zero, 4) as share_at_or_below_zero,
+    round(by_hour.share_at_or_below_zero, 6) as share_at_or_below_zero,
     by_hour.covered_hours,
     year_coverage.partial_reason is not null or year_coverage.completeness < 0.98
         as is_partial_year,
