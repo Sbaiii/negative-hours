@@ -8,11 +8,11 @@ Target: **3 weeks** (2026-10-01 → 2026-10-21). One commit minimum every workin
 - [x] Create Obsidian vault `control-room`
 - [x] Publish repo to GitHub (public) & first push
 - [x] Register on ENTSO-E Transparency Platform + request API key
-- [ ] Receive API approval → generate token → put in `.env` (waiting, ~3 working days)
+- [x] Receive API approval → generate token → put in `.env`
 - [x] Install `uv` on the Mac, open repo in VS Code
 - [x] Decide bidding zones → [[04 Decisions/Decision Index|decision]]
 
-## Phase 1 — Ingestion (Days 2–4)
+## Phase 1 — Ingestion (Days 2–4) ✅
 - [x] `pyproject.toml` with dependencies (entsoe-py, pandas, pyarrow, duckdb, python-dotenv)
 - [x] `pipeline/extract.py`: day-ahead prices per zone, per year → Parquet
 - [x] Add generation per type (solar, wind) and load
@@ -26,20 +26,23 @@ Target: **3 weeks** (2026-10-01 → 2026-10-21). One commit minimum every workin
 - [x] Marts: `fct_negative_hours` ✅, `fct_capture_prices` ✅, `fct_battery_arbitrage` ✅, `fct_hourly_profile` ✅, `fct_ev_charging` ✅ (~~`fct_prices_hourly`~~ dropped: covered by `int_energy_hourly` and `fct_hourly_profile`)
 - [x] Tests (not null, unique, accepted ranges) + `dbt docs`
 
-## Phase 3 — Analysis (Days 8–12)
+## Phase 3 — Analysis (Days 8–12) ✅
 - [x] Q1 Negative hours → `analysis/q1_negative_hours.ipynb`, 3 charts in `docs/figures/`
 - [x] Q2 Solar capture rate → `analysis/q2_capture_prices.ipynb`, 4 charts in `docs/figures/`; 2022 and regional hypotheses tested
 - [x] Q3 Battery arbitrage value → daily LP (`models/battery.py`, ADR-007), `analysis/q3_battery_arbitrage.ipynb`, 4 charts in `docs/figures/`
 - [x] Q4 EV charging windows → `fct_hourly_profile`, `fct_ev_charging` (ADR-008), `analysis/q4_ev_charging.ipynb`, 3 charts in `docs/figures/`
-- [ ] One finding note per insight in `06 Findings/` (Q1: 3 notes ✅, Q2: 5 notes ✅, Q3: 4 notes ✅, Q4: 3 notes ✅)
+- [x] One finding note per insight in `06 Findings/` (Q1: 3 notes ✅, Q2: 5 notes ✅, Q3: 4 notes ✅, Q4: 3 notes ✅)
 
-## Phase 4 — Ship (Days 13–16) ← we are here
+## Phase 4 — Ship (Days 13–16) ✅
 - [x] Dashboard: static page in `dashboard/` on GitHub Pages, data rebuilt daily (embed on sbaiii.com still to do)
 - [x] GitHub Actions: scheduled daily refresh + Pages deploy → [[04 Decisions/ADR-009 Automated Daily Refresh|ADR-009]]
 - [x] Architecture diagram (README, with the scheduled refresh)
 
-## Phase 5 — Story (Days 17–21)
-- [ ] Exec memo (1 page, 3 recommendations)
-- [ ] Final README with headline numbers + screenshots
+## Phase 5 — Story (Days 17–21) ✅
+- [x] Exec memo (1 page, 3 recommendations) → `docs/exec_memo.md`, every number checked against the 2026-10-02 snapshot
+- [x] Final README: key results, exec memo link, decisions, validation, caveats
+
+## After the project (outside the repo)
+- [ ] Embed the dashboard on sbaiii.com
 - [ ] Project page on sbaiii.com
 - [ ] LinkedIn post
