@@ -17,7 +17,7 @@ Annual capture rate = **seasonal part** × **within-month part**. The seasonal p
 | FR | 0.875 | **1.084** | 0.987 | 0.975 | 86.4% → 105.7% | +0.56 | Aug, Jul, Sep |
 | BE | 0.805 | **1.076** | 0.916 | 0.855 | 73.7% → 92.0% | +0.39 | Aug, Sep, Jul |
 | IT_NORD | 0.850 | **1.072** | 0.998 | 0.957 | 84.8% → 102.6% | +0.47 | Aug, Jul, Sep |
-| PL | 0.931 | **1.068** | 1.012 | 0.848 | 94.2% → 90.5% | +0.49 | Aug, Jul, Jun |
+| PL | 0.931 | **1.068** | 1.013 | 0.848 | 94.2% → 90.5% | +0.49 | Aug, Jul, Jun |
 | ES | 0.957 | 0.995 | 0.955 | 0.905 | 91.5% → 90.1% | −0.05 | Mar, Jan, Feb |
 | PT | 1.005 | 1.001 | 0.955 | 0.899 | 96.0% → 89.9% | −0.00 | Mar, Jan, Feb |
 
@@ -33,7 +33,7 @@ Annual capture rate = **seasonal part** × **within-month part**. The seasonal p
 ## What it does not support
 - **Why** summer 2022 prices were so high elsewhere. The causes (gas prices, other supply issues) are not in this dataset and are not claimed here.
 - That the cap **caused** lower Iberian summer prices. There is no counterfactual here, only a difference in timing.
-- **Poland does not fit the premise neatly.** It had the same seasonal alignment (1.068, priciest months Aug, Jul, Jun), but its within-month part fell sharply (1.012 → 0.848), so its annual rate still dropped. Why is not tested here.
+- **Poland does not fit the premise neatly.** It had the same seasonal alignment (1.068, priciest months Aug, Jul, Jun), but its within-month part fell sharply (1.013 → 0.848), so its annual rate still dropped. Why is not tested here.
 
 ## Method
 `fct_solar_monthly` (dbt), notebook `analysis/q2_capture_prices.ipynb` (section "Why did 2022 lift solar capture rates"). Seasonal part = Σ(monthly baseload × monthly solar MWh) / Σ(solar MWh) / annual baseload (days-weighted); within-month = annual capture rate / seasonal part.

@@ -1,6 +1,6 @@
 # Smart charging cut an EV's wholesale charging cost by 67% to 74% in 2025, except in North Italy (39%)
 
-**Question:** Q4 · **Date:** 2026-10-03
+**Question:** Q4 · **Date:** 2026-10-03 · **Updated:** 2026-10-04
 
 ## Headline
 For an EV charging 10 kWh a day at 7 kW, choosing the cheapest block of each day instead of plugging in at 18:00 saved **€182 to €368 per year** of wholesale cost in 2025 (67% to 74%), and €198 (39%) in North Italy.
@@ -20,7 +20,7 @@ For an EV charging 10 kWh a day at 7 kW, choosing the cheapest block of each day
 | ES | 271.11 | 229.64 | 89.00 | 182.11 | 67.2% | 74.28 / 24.38 |
 
 - In spring 2025, smart charging in **Belgium and the Netherlands was paid on balance**: average price paid −0.29 and −0.22 €/MWh (savings share just over 100%).
-- The smart saving share grew from 22% to 49% in 2019 to 67% to 74% in 2025 (outside IT_NORD), and 74% to 83% in 2026 to 2 Oct (as-of date; snapshot `analysis/outputs/snapshots/2026-10-02/`).
+- In full years the smart saving share grew from 22% to 49% in 2019 to 67% to 74% in 2025 (outside IT_NORD). Over the same dates (1 Jan to 2 Oct; snapshot `analysis/outputs/snapshots/2026-10-02/`) it was 67% to 80% in 2025 and 74% to 83% in 2026 (outside IT_NORD).
 - North Italy: GME accepts day-ahead offers only at or above 0 €/MWh, so prices there cannot go negative ([[Q1-3 Share of hours at or below zero 2026|Q1-3]]); its place in this ranking partly reflects that market rule. Smart charging there can never be paid to charge, which caps its saving.
 
 ## Method

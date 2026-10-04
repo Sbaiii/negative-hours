@@ -16,10 +16,10 @@ Between 2019 and 2025, solar's share of reported generation rose and its capture
 | PT | 2019 | 2.2% | 101.9% | 12.5% | 53.4% |
 | PL | 2021 | 2.9% | 94.2% | 12.1% | 64.4% |
 | IT_NORD | 2019 | 5.4% | 98.6% | 11.0% | 81.8% |
-| FR | 2019 | 2.2% | 95.7% | 5.7% | 58.9% |
+| FR | 2019 | 2.2% | 95.7% | 5.7% | 58.8% |
 
-- **Share alone doesn't set the rate.** At similar shares in 2025, North Italy (11.0%) kept 81.8%, Poland (12.1%) 64.4% and Portugal (12.5%) only 53.4%. France fell to 58.9% at just 5.7% solar.
-- 2026 to 2 Oct (as-of date) continues the pattern in Spain (25.6% share, 50.7% rate) and Portugal (15.2%, 50.2%).
+- **Share alone doesn't set the rate.** At similar shares in 2025, North Italy (11.0%) kept 81.8%, Poland (12.1%) 64.4% and Portugal (12.5%) only 53.4%. France fell to 58.8% at just 5.7% solar.
+- 2026 is not a full year, so it is not on this curve. Over the same dates (1 Jan to 2 Oct), Spain's capture rate fell from 54.0% in 2025 to 50.7% in 2026 and Portugal's from 51.1% to 50.2% (see [[Q2-1 Solar earns about half the average price|Q2-1]]).
 
 ## Method
 `fct_capture_prices`: `solar_share` = solar MWh / total reported generation MWh; `solar_capture_rate` as in Q2-1. Notebook chart 2 (one panel per zone, other zones in grey). The Netherlands is left out: ENTSO-E reports 0.49 TWh of Dutch solar in 2024 vs 22 TWh in CBS statistics.
