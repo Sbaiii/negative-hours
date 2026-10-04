@@ -30,7 +30,7 @@ In `fct_capture_prices` (zone × local year):
 - **Checked:** DE_LU 2024 solar capture price 46.23 €/MWh vs the published German solar market value of 4.624 ct/kWh (Netztransparenz).
 
 ## Consequences
-- Generation is **as reported to ENTSO-E**. In the Netherlands it misses almost all solar: 0.49 TWh in 2024 vs 22 TWh in national statistics (CBS). NL `solar_share` is not usable and NL capture rates are indicative only (see Data Dictionary).
+- Generation is **as reported to ENTSO-E**. In the Netherlands it misses almost all solar: 0.49 TWh in 2024 vs 22 TWh in national statistics (CBS). NL `solar_share` is not usable and NL capture rates are indicative only (see Data Dictionary). France checked against RTE: 23.3 TWh of solar on ENTSO-E vs 24.8 TWh nationally in 2024 (−6%).
 - Intra-hour (15-min) price shape after Oct 2025 was not captured; fixed by the update below.
 - `int_energy_hourly` was a table (~536k rows); replaced by `int_energy_periods` (update below).
 

@@ -48,9 +48,11 @@ Source: `query_load` (process type A16, realised). File: `data/raw/load/zone=<ZO
 | `stg_generation` | staging (view) | zone × production_type × ts_utc | Typed raw generation; drops types never non-zero in a zone (BE Fossil Hard coal; ES Coal-derived gas, Oil shale, Peat, Geothermal, Marine, Wind Offshore; IT_NORD Geothermal; NL Hydro Run-of-river; PL Energy storage) |
 | `int_prices_published` | intermediate (view) | zone × ts_utc | Every published price with `ts_local`, `local_date`, `local_year`, `duration_h` (exact decimals). Runs into tomorrow; only EV overnight charging reads it directly |
 | `int_as_of` | intermediate (table) | one row | The run's **as-of date**: last local day with complete prices and generation in all 8 zones; also `limiting_zone` (ADR-005) |
+| `int_prices_hourly` | intermediate (view) | zone × hour_utc | Hourly mean price up to the as-of date: basis of the headline negative-hour count (ADR-005) |
 | `int_prices_local` | intermediate (view) | zone × ts_utc | `int_prices_published` up to the as-of date: the price table every mart and the battery model read |
 | `int_zone_years` | intermediate (view) | zone × local_year | Year bounds (local midnight as UTC), `expected_hours`, `known_partial_reason`. Shared by all zone-year marts |
 | `int_energy_periods` | intermediate (table) | zone × generation period | Solar / wind / total MWh per generation period and the price over exactly that period (15-min match where both are 15-min); replaced `int_energy_hourly` on 2026-10-04 (ADR-006) |
+| `fct_ytd_comparison` | mart (table) | zone × local_year | Every year cut to 1 Jan to the as-of date's day and month: negative hours, solar capture rate, 2 h battery revenue, EV costs. The only place 2026 is compared with other years (ADR-005). Exported |
 | `fct_negative_hours` | mart (table) | zone × local_year | Q1 metrics, see below. Exported to `analysis/outputs/fct_negative_hours.csv` |
 | `fct_capture_prices` | mart (table) | zone × local_year | Q2 metrics, see below. Exported to `analysis/outputs/fct_capture_prices.csv` |
 | `battery.arbitrage_daily` | source (table, written by `models/run_battery.py`) | zone × local_date × battery_duration_h | Daily optimal (LP) and heuristic schedule results for a 1 MW battery (ADR-007). Incomplete price days skipped |
@@ -64,9 +66,10 @@ Source: `query_load` (process type A16, realised). File: `data/raw/load/zone=<ZO
 |---|---|---|
 | zone | text | Bidding zone code |
 | local_year | int | Calendar year in the zone's local time |
-| negative_hours | double | Σ duration (h) of periods with price < 0 (headline) |
-| negative_hours_hourly_avg | double | Hours whose hourly mean price is < 0; equals negative_hours before 2025-10-01 (ADR-005 update) |
-| zero_or_negative_hours | double | Σ duration (h) of periods with price ≤ 0 |
+| negative_hours | double | **Headline:** hours whose hourly mean price is < 0 (the RTE/REE convention) |
+| zero_or_negative_hours | double | Hours whose hourly mean price is ≤ 0 |
+| negative_period_hours | double | Σ duration (h) of price periods < 0 (15-min periods count 0.25 h); equals negative_hours before 2025-10-01 |
+| zero_or_negative_period_hours | double | Σ duration (h) of price periods ≤ 0 |
 | covered_hours | double | Σ duration (h) of periods with a price |
 | expected_hours | double | Hours in the local year (current year: up to the end of the last period) |
 | completeness | double | covered_hours / expected_hours |
@@ -100,6 +103,7 @@ Definitions: [[04 Decisions/ADR-006 Hourly Grid and Capture Prices|ADR-006]].
 |---|---:|---:|---|
 | NL | 0.49 TWh (0.46% of reported generation) | 22 TWh (CBS) | **~2% of real output: NL `solar_share` unusable, capture rate indicative only** |
 | DE_LU | 63.4 TWh (14.45%) | 59.8 TWh net public, 72.2 TWh incl. self-consumption; 14% of public generation (Fraunhofer ISE) | Consistent |
+| FR | 23.3 TWh (4.45% of reported generation) | 24.8 TWh, 4.6% of national production of 539.0 TWh ([RTE, Bilan électrique 2024, principaux résultats](https://assets.rte-france.com/analyse-et-donnees/2025-09/BE2024%20-%20Principaux%20R%C3%A9sultats.pdf)) | ENTSO-E is 6% below RTE (total generation 523.7 vs 539.0 TWh, −2.8%); consistent in shape, slightly low in level |
 | others | | not checked against national statistics | Use with the label "as reported" |
 
 Capture *rates* are less exposed than shares: they depend on the shape of the solar profile, not its size. But a series that covers 2% of a country's panels may not have the national shape.
@@ -137,8 +141,9 @@ Perfect foresight on cleared day-ahead prices, 1 cycle a day, 88% round trip: an
 Wholesale day-ahead component only: no retail margin, taxes or grid fees. Definitions: [[04 Decisions/ADR-008 EV Charging Strategies|ADR-008]].
 
 ### Current year, as-of date and snapshots
+- Rates and shares are stored and exported with 6 decimals (prices 2, MWh 3), so a percentage rounded to 1 decimal can't land on a rounding boundary.
 - Every mart row has `data_through_date`: 31 December, or the as-of date (`int_as_of`) for the current year. The current year's `expected_hours` runs to the end of the as-of date, so its completeness is real.
-- `analysis/outputs/*.csv` and the dashboard are live (updated by the daily refresh). Numbers written in the README and finding notes come from a frozen copy, `analysis/outputs/snapshots/<as-of date>/`, which also holds `quoted_numbers.csv`: each quoted 2026 number, the text around it and how to recompute it. `tests/test_quoted_numbers.py` checks them.
+- `analysis/outputs/*.csv` and the dashboard are live (updated by the daily refresh). Numbers written in the README and finding notes come from a frozen copy, `analysis/outputs/snapshots/<as-of date>/`, which also holds the notebook tables the notes quote (`q1_*`, `q2_*`, `q3_*`, `q4_*`) and `quoted_numbers.csv`: every number in the README and finding notes, the text around it, its position and how to recompute it (or why it is a constant or an external figure). `build_registry.py` drafts it; `tests/test_quoted_numbers.py` checks it and fails on any unregistered number.
 - `analysis/outputs/q3_hourly_resolve_ytd.csv` is written by the Q3 notebook (2026 battery revenue re-solved on hourly prices), not by the daily refresh.
 
 ## Data quality log
