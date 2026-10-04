@@ -1,5 +1,5 @@
 {
- "generated_on": "2026-10-03",
+ "generated_on": "2026-10-04",
  "as_of_date": "2026-10-02",
  "zones": [
   {
@@ -10,7 +10,7 @@
     "current": {
      "first_day": "2026-01-01",
      "last_day": "2026-10-02",
-     "negative_hours": 303.75,
+     "negative_hours": 298.0,
      "solar_capture_rate": 0.5573,
      "battery_revenue_eur_per_mw": 73257.0,
      "ev_smart_saving_eur": 291.41,
@@ -425,7 +425,7 @@
     "current": {
      "first_day": "2026-01-01",
      "last_day": "2026-10-02",
-     "negative_hours": 463.25,
+     "negative_hours": 471.0,
      "solar_capture_rate": 0.5185,
      "battery_revenue_eur_per_mw": 78911.0,
      "ev_smart_saving_eur": 320.74,
@@ -840,7 +840,7 @@
     "current": {
      "first_day": "2026-01-01",
      "last_day": "2026-10-02",
-     "negative_hours": 684.25,
+     "negative_hours": 747.0,
      "solar_capture_rate": 0.5067,
      "battery_revenue_eur_per_mw": 62771.0,
      "ev_smart_saving_eur": 142.68,
@@ -1255,7 +1255,7 @@
     "current": {
      "first_day": "2026-01-01",
      "last_day": "2026-10-02",
-     "negative_hours": 533.75,
+     "negative_hours": 563.0,
      "solar_capture_rate": 0.5401,
      "battery_revenue_eur_per_mw": 66218.0,
      "ev_smart_saving_eur": 244.68,
@@ -2085,7 +2085,7 @@
     "current": {
      "first_day": "2026-01-01",
      "last_day": "2026-10-02",
-     "negative_hours": 393.0,
+     "negative_hours": 388.0,
      "solar_capture_rate": 0.5902,
      "battery_revenue_eur_per_mw": 78382.0,
      "ev_smart_saving_eur": 311.63,
@@ -2500,7 +2500,7 @@
     "current": {
      "first_day": "2026-01-01",
      "last_day": "2026-10-02",
-     "negative_hours": 301.25,
+     "negative_hours": 314.0,
      "solar_capture_rate": 0.5882,
      "battery_revenue_eur_per_mw": 87529.0,
      "ev_smart_saving_eur": 356.59,
@@ -2915,7 +2915,7 @@
     "current": {
      "first_day": "2026-01-01",
      "last_day": "2026-10-02",
-     "negative_hours": 538.0,
+     "negative_hours": 599.0,
      "solar_capture_rate": 0.5025,
      "battery_revenue_eur_per_mw": 59843.0,
      "ev_smart_saving_eur": 229.6,

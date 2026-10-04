@@ -29,7 +29,7 @@ const KPIS = [
     title: "Negative-price hours",
     format: fmt.hours,
     change: "relative",
-    note: "Time with a day-ahead price below 0.",
+    note: "Hours whose hourly mean day-ahead price was below 0.",
   },
   {
     key: "solar_capture_rate",

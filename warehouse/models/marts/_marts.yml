@@ -13,8 +13,11 @@ models:
             expression: "negative_hours <= zero_or_negative_hours and zero_or_negative_hours <= covered_hours"
       - expression_is_true:
           arguments:
-            # Before the 15-min switch every period is an hour: the two counts match.
-            expression: "local_year >= 2025 or negative_hours = negative_hours_hourly_avg"
+            # Before the 15-min switch every period is an hour: hourly and period counts match.
+            expression: "local_year >= 2025 or (negative_hours = negative_period_hours and zero_or_negative_hours = zero_or_negative_period_hours)"
+      - expression_is_true:
+          arguments:
+            expression: "negative_period_hours <= zero_or_negative_period_hours and zero_or_negative_period_hours <= covered_hours"
       - expression_is_true:
           arguments:
             expression: "is_partial_year = (partial_reason is not null)"
@@ -26,16 +29,21 @@ models:
         description: Calendar year in the zone's local time.
         data_tests: [not_null]
       - name: negative_hours
-        description: Hours with a day-ahead price strictly below 0 EUR/MWh (summed period durations; the headline metric).
-        data_tests: [not_null]
-      - name: negative_hours_hourly_avg
         description: >
-          Hours whose hourly MEAN price is below 0, for comparison with hourly-only
-          sources. Equal to negative_hours before the 15-min switch (2025-10-01);
-          after it, a quarter-hour can be negative inside a positive hour (ADR-005).
+          Headline: hours whose hourly MEAN day-ahead price is below 0 EUR/MWh, the
+          convention of published counts (RTE, REE). Same as negative_period_hours
+          before the 15-min switch (2025-10-01), tested (ADR-005).
+        data_tests: [not_null]
+      - name: negative_period_hours
+        description: >
+          Secondary: summed duration of periods with a price below 0 (a negative
+          15-min period counts 0.25 h, even inside a positive hour).
+        data_tests: [not_null]
+      - name: zero_or_negative_period_hours
+        description: "Secondary: summed duration of periods with a price at or below 0."
         data_tests: [not_null]
       - name: zero_or_negative_hours
-        description: Hours with a price at or below 0 EUR/MWh (includes exactly-zero prices, common in Iberia).
+        description: Hours whose hourly mean price is at or below 0 EUR/MWh (includes exactly-zero hours, common in Iberia).
         data_tests: [not_null]
       - name: covered_hours
         description: Hours with a price in the data.
@@ -391,3 +399,66 @@ models:
       - name: data_through_date
         description: Last day the row covers (31 December, or the as-of date for the current year, the same for every zone).
         data_tests: [not_null]
+
+  - name: fct_ytd_comparison
+    description: >
+      Like-for-like year to date. Every year cut to 1 January to the as-of date's
+      day and month, so the current year is compared with the SAME window of
+      earlier years, never with a full year (ADR-005). One row per zone and local
+      year: negative hours (hourly-mean convention), solar capture rate, 2-hour
+      battery revenue and EV charging costs over the window.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [zone, local_year]
+      - expression_is_true:
+          arguments:
+            expression: "negative_hours <= zero_or_negative_hours and zero_or_negative_hours <= covered_hours"
+      - expression_is_true:
+          arguments:
+            # Complete windows: every hour of the window has a price (PL 2019 aside).
+            expression: "is_partial_window or covered_hours >= expected_hours - 24"
+    columns:
+      - name: zone
+        data_tests: [not_null]
+      - name: local_year
+        data_tests: [not_null]
+      - name: window_end_date
+        description: Last day of the window in that year (same day and month as the as-of date).
+        data_tests: [not_null]
+      - name: negative_hours
+        description: Hours with an hourly mean price below 0 in the window.
+      - name: zero_or_negative_hours
+        description: Hours with an hourly mean price at or below 0 in the window.
+      - name: covered_hours
+        description: Hours with a price in the window.
+      - name: expected_hours
+        description: Hours from local midnight on 1 January to the end of window_end_date.
+      - name: baseload_price
+        description: Time-weighted mean price over the window, EUR/MWh.
+      - name: solar_capture_price
+        description: Solar-weighted price over the window (generation-period match, ADR-006); null below 95% solar coverage.
+      - name: solar_capture_rate
+        description: solar_capture_price / baseload_price over the window.
+      - name: battery_revenue_eur_per_mw
+        description: Day-ahead arbitrage revenue of a 1 MW / 2 MWh battery over the window (ADR-007), EUR per MW.
+      - name: ev_days
+        description: Days with all three EV strategies priced in the window.
+      - name: ev_immediate_eur
+        description: Wholesale cost of charging at 18:00 over the window, EUR (10 kWh a day).
+      - name: ev_overnight_eur
+        description: Same, cheapest block 22:00 to 07:00.
+      - name: ev_smart_eur
+        description: Same, cheapest block in the day.
+      - name: ev_smart_saving_eur
+        description: ev_immediate_eur - ev_smart_eur.
+      - name: ev_smart_saving_share
+        description: Smart saving as a share of the 18:00 cost.
+      - name: ev_overnight_saving_share
+        description: Overnight saving as a share of the 18:00 cost (negative when nights cost more).
+      - name: is_partial_window
+        description: True only for PL 2019 (prices in PLN before 20 Nov 2019, excluded).
+        data_tests: [not_null]
+      - name: partial_reason
+        description: "'pln_prices_excluded' or null."
+

@@ -29,6 +29,22 @@ models:
           arguments:
             columns: [zone, ts_utc]
 
+  - name: int_prices_hourly
+    description: >
+      Hourly mean day-ahead price per zone and UTC hour, up to the as-of date: the
+      basis of the headline negative-hour count (hours whose mean price is below
+      0, the convention of RTE and REE; ADR-005).
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [zone, hour_utc]
+    columns:
+      - name: hourly_mean_price
+        description: Duration-weighted mean of the hour's price periods, EUR/MWh.
+        data_tests: [not_null]
+      - name: hours
+        description: Part of the hour with a price (1.0 when complete).
+
   - name: int_prices_local
     description: >
       int_prices_published up to and including the as-of date (int_as_of): the
