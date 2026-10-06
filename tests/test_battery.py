@@ -5,7 +5,7 @@ import math
 import numpy as np
 import pytest
 
-from models.battery import Battery, heuristic_day, optimal_day
+from battery.model import Battery, heuristic_day, optimal_day
 
 HOURLY = np.ones(24)
 ETA = math.sqrt(0.88)  # one-way efficiency

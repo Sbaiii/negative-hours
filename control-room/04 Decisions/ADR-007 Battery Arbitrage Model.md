@@ -11,7 +11,7 @@ Q3 asks where a battery is worth the most. We answer one narrow part of that: wh
 3. A multi-market model (day-ahead + intraday + balancing) with forecast error
 
 ## Decision
-Option 2. `models/battery.py` solves each zone × local day as a linear program (`scipy.optimize.linprog`, HiGHS); `models/run_battery.py` runs it for every day from 2019 and writes `battery.arbitrage_daily` into the warehouse; dbt sums it into `fct_battery_arbitrage` (zone × local year × duration).
+Option 2. `battery/model.py` solves each zone × local day as a linear program (`scipy.optimize.linprog`, HiGHS); `battery/run.py` runs it for every day from 2019 and writes `battery.arbitrage_daily` into the warehouse; dbt sums it into `fct_battery_arbitrage` (zone × local year × duration).
 
 **Assumptions**
 
@@ -51,5 +51,5 @@ Sources: [Gridcog, The commercial opportunities for utility-scale batteries in G
 
 ## Consequences
 - Results are €/MW/year of **gross day-ahead trading margin**, not profit: no capex, opex, degradation or fees. No IRR or payback is computed.
-- Run order: `dbt build` → `python -m models.run_battery` → `dbt build --select fct_battery_arbitrage` (the runner reads `int_prices_local`; the mart reads the runner's table).
+- Run order: `dbt build` → `python -m battery.run` → `dbt build --select fct_battery_arbitrage` (the runner reads `int_prices_local`; the mart reads the runner's table).
 - Days are independent: the model can't carry energy overnight (e.g. charge at a negative Sunday noon to sell Monday morning).

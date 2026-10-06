@@ -55,7 +55,7 @@ Source: `query_load` (process type A16, realised). File: `data/raw/load/zone=<ZO
 | `fct_ytd_comparison` | mart (table) | zone × local_year | Every year cut to 1 Jan to the as-of date's day and month: negative hours, solar capture rate, 2 h battery revenue, EV costs. The only place 2026 is compared with other years (ADR-005). Exported |
 | `fct_negative_hours` | mart (table) | zone × local_year | Q1 metrics, see below. Exported to `analysis/outputs/fct_negative_hours.csv` |
 | `fct_capture_prices` | mart (table) | zone × local_year | Q2 metrics, see below. Exported to `analysis/outputs/fct_capture_prices.csv` |
-| `battery.arbitrage_daily` | source (table, written by `models/run_battery.py`) | zone × local_date × battery_duration_h | Daily optimal (LP) and heuristic schedule results for a 1 MW battery (ADR-007). Incomplete price days skipped |
+| `battery.arbitrage_daily` | source (table, written by `battery/run.py`) | zone × local_date × battery_duration_h | Daily optimal (LP) and heuristic schedule results for a 1 MW battery (ADR-007). Incomplete price days skipped |
 | `fct_battery_arbitrage` | mart (table) | zone × local_year × battery_duration_h | Q3 metrics, see below. Exported to `analysis/outputs/fct_battery_arbitrage.csv` |
 | `fct_hourly_profile` | mart (table) | zone × local_year × season × local_hour | Q4: mean / median price and share of time ≤ 0 by hour of day and season (ADR-008). Exported |
 | `fct_ev_charging` | mart (table) | zone × local_year × season (+ `year`) | Q4: wholesale cost of 10 kWh/day at 7 kW, immediate (18:00) vs overnight vs smart, € per year and savings (ADR-008). Exported |
@@ -143,7 +143,7 @@ Wholesale day-ahead component only: no retail margin, taxes or grid fees. Defini
 ### Current year, as-of date and snapshots
 - Rates and shares are stored and exported with 6 decimals (prices 2, MWh 3), so a percentage rounded to 1 decimal can't land on a rounding boundary.
 - Every mart row has `data_through_date`: 31 December, or the as-of date (`int_as_of`) for the current year. The current year's `expected_hours` runs to the end of the as-of date, so its completeness is real.
-- `analysis/outputs/*.csv` and the dashboard are live (updated by the daily refresh). Numbers written in the README and finding notes come from a frozen copy, `analysis/outputs/snapshots/<as-of date>/`, which also holds the notebook tables the notes quote (`q1_*`, `q2_*`, `q3_*`, `q4_*`) and `quoted_numbers.csv`: every number in the README and finding notes, the text around it, its position and how to recompute it (or why it is a constant or an external figure). `build_registry.py` drafts it; `tests/test_quoted_numbers.py` checks it and fails on any unregistered number.
+- `analysis/outputs/*.csv` and the dashboard are live (updated by the daily refresh). Numbers written in the README and finding notes come from a frozen copy, `analysis/outputs/snapshots/<as-of date>/`, which also holds the notebook tables the notes quote (`q1_*`, `q2_*`, `q3_*`, `q4_*`) and `quoted_numbers.csv`: every number in the README and finding notes, the text around it, its position and how to recompute it (or why it is a constant or an external figure). `tests/test_quoted_numbers.py` checks it and fails on any unregistered number.
 - `analysis/outputs/q3_hourly_resolve_ytd.csv` is written by the Q3 notebook (2026 battery revenue re-solved on hourly prices), not by the daily refresh.
 
 ## Data quality log

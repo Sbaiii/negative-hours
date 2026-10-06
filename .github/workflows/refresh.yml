@@ -85,7 +85,7 @@ jobs:
         run: uv run dbt build --exclude source:battery+
 
       - name: Run the battery model
-        run: uv run python -m models.run_battery
+        run: uv run python -m battery.run
 
       - name: Build the battery mart (dbt)
         working-directory: warehouse

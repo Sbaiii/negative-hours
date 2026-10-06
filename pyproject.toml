@@ -29,5 +29,5 @@ pythonpath = ["."]
 testpaths = ["tests"]
 
 [tool.ruff.lint.isort]
-# Local modules: the pipeline and models packages and the notebooks' shared chart style.
-known-first-party = ["pipeline", "models", "chart_style"]
+# Local modules: the pipeline and battery packages and the notebooks' shared chart style.
+known-first-party = ["pipeline", "battery", "chart_style"]

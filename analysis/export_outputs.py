@@ -1,6 +1,6 @@
 """Export small mart tables from the DuckDB warehouse to CSV (committed, unlike data/).
 
-Run after `dbt build` and `python -m models.run_battery` (from the repo root):
+Run after `dbt build` and `python -m battery.run` (from the repo root):
     uv run python analysis/export_outputs.py
 """
 

@@ -5,7 +5,7 @@ first), solves each complete local day for every battery duration, and writes
 battery.arbitrage_daily into data/warehouse.duckdb. dbt then reads that table as
 a source for fct_battery_arbitrage (ADR-007).
 
-    uv run python -m models.run_battery
+    uv run python -m battery.run
 """
 
 import logging
@@ -14,7 +14,7 @@ import time
 import duckdb
 import pandas as pd
 
-from models.battery import Battery, heuristic_day, optimal_day
+from battery.model import Battery, heuristic_day, optimal_day
 from pipeline.config import REPO_ROOT
 
 WAREHOUSE = REPO_ROOT / "data" / "warehouse.duckdb"

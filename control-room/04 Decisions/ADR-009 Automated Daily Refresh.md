@@ -21,7 +21,7 @@ Option 3, in `.github/workflows/refresh.yml` (daily) and `.github/workflows/page
 - **Cache hit:** re-download the **current year** only (the extractor always refreshes it, picking up late TSO revisions). In the first 7 days of January also re-download last year with `--force`, because its last day was fetched before it ended.
 - The cache is saved even if a later step fails (`!cancelled()`), so a failed dbt test doesn't throw away a 3-hour backfill.
 
-**Build:** `uv sync --locked` (lockfile), unit tests, `dbt build --exclude source:battery+` → `models.run_battery` → `dbt build --select source:battery+`. Any failing test fails the job, and nothing is committed.
+**Build:** `uv sync --locked` (lockfile), unit tests, `dbt build --exclude source:battery+` → `battery.run` → `dbt build --select source:battery+`. Any failing test fails the job, and nothing is committed.
 
 **What gets committed:** only `analysis/outputs/*.csv` (the marts, ~1 MB) and `dashboard/data/` (one JSON, ~40 KB), and only if they changed, as `data: daily refresh YYYY-MM-DD` by `github-actions[bot]`. CSV values are rounded per column type and computed from exact decimal sums, so an unchanged input gives byte-identical files (no noise commits).
 

@@ -16,8 +16,8 @@ sources:
   - name: battery
     schema: battery
     description: >
-      Daily results of the battery arbitrage LP (models/run_battery.py, ADR-007),
-      written into the warehouse by `uv run python -m models.run_battery`. Run it
+      Daily results of the battery arbitrage LP (battery/run.py, ADR-007),
+      written into the warehouse by `uv run python -m battery.run`. Run it
       after `dbt build` (it reads int_prices_local), then build fct_battery_arbitrage.
     tables:
       - name: arbitrage_daily

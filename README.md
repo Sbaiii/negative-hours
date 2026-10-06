@@ -58,7 +58,7 @@ Notebook: [`analysis/q2_capture_prices.ipynb`](analysis/q2_capture_prices.ipynb)
 - **North Italy:** North Italy's day-ahead market accepts no offers below 0 €/MWh (GME rule), so it can never go negative; its place in rankings partly reflects market design.
 - **Caveat:** an upper bound for one market: perfect foresight on cleared day-ahead prices, 1 cycle a day, 88% round trip. Excludes intraday, balancing and capacity markets, degradation, grid fees and all costs. Not investment advice.
 
-Notebook: [`analysis/q3_battery_arbitrage.ipynb`](analysis/q3_battery_arbitrage.ipynb) · Model: [ADR-007](control-room/04%20Decisions/ADR-007%20Battery%20Arbitrage%20Model.md), [`models/battery.py`](models/battery.py)
+Notebook: [`analysis/q3_battery_arbitrage.ipynb`](analysis/q3_battery_arbitrage.ipynb) · Model: [ADR-007](control-room/04%20Decisions/ADR-007%20Battery%20Arbitrage%20Model.md), [`battery/model.py`](battery/model.py)
 
 #### Q4 · When should EVs charge?
 
@@ -154,7 +154,7 @@ Output is one Parquet file per dataset, zone and year, e.g.
 cd warehouse
 uv run dbt build --exclude source:battery+   # seed, models and tests → data/warehouse.duckdb
 cd ..
-uv run python -m models.run_battery          # battery LP for every zone-day (~3 min) → battery.arbitrage_daily
+uv run python -m battery.run          # battery LP for every zone-day (~3 min) → battery.arbitrage_daily
 cd warehouse
 uv run dbt build --select source:battery+    # Q3 mart from the LP results
 uv run dbt docs generate    # then `uv run dbt docs serve` to browse model docs
