@@ -1,22 +1,21 @@
 # Negative Hours
-### How often is power free in Europe, and who makes money from it?
+
+How often is electricity free in Europe, and who makes money when it is? I measured it for 8 bidding zones, from 2019 to today.
 
 [![Daily refresh](https://github.com/Sbaiii/negative-hours/actions/workflows/refresh.yml/badge.svg)](https://github.com/Sbaiii/negative-hours/actions/workflows/refresh.yml)
 
-**[Live dashboard](https://sbaiii.github.io/negative-hours/)** (updated daily) · **[Exec memo](docs/exec_memo.md)** (one page, three recommendations)
-
-Solar and wind now push European wholesale electricity prices to **zero or below** for hours at a time. That breaks old business models (solar farms earn less exactly when they produce most) and creates new ones (batteries get paid to absorb free power). This project measures that shift in 8 bidding zones across Europe from 2019 to today, using official grid data from the [ENTSO-E Transparency Platform](https://transparency.entsoe.eu/), and turns it into decisions.
+**[Live dashboard](https://sbaiii.github.io/negative-hours/)** (updated daily) · **[Exec memo](docs/exec_memo.md)** (one page, written for a non-technical reader)
 
 ## Key results
 
 ![Negative prices went from rare to routine: 5 of 8 zones topped 500 hours in 2025; before 2023 no zone ever exceeded 298](docs/figures/q1_negative_hours_by_zone.svg)
 
-- **Q1 · Negative prices became routine:** 5 of 8 zones topped 500 negative hours in 2025; before 2023 no zone ever exceeded 298.
-- **Q2 · Solar earns about half the average price:** 51% to 59% in 5 zones in 2025, down from 92% to 102% in 2019; wind kept 86% to 97%.
-- **Q3 · Batteries:** an optimised 2 h battery could have earned up to €85.6k per MW in Poland in 2025, €76.1k in Germany and the Netherlands, €36.6k in North Italy.
-- **Q4 · EV charging moved to midday:** the cheapest hour moved from 03:00 or 04:00 (2019) to 12:00 to 14:00 (2025); smart charging cut the wholesale cost by 67% to 74% in 7 zones.
+- **Negative prices became routine (Q1).** 5 of 8 zones topped 500 negative hours in 2025; before 2023 no zone ever exceeded 298.
+- **Solar earns about half the average price (Q2).** 51% to 59% in 5 zones in 2025, down from 92% to 102% in 2019. Wind kept 86% to 97%.
+- **A battery earned most in Poland (Q3).** An optimised 2 h battery could have earned up to €85.6k per MW in Poland in 2025, €76.1k in Germany and the Netherlands, and €36.6k in North Italy.
+- **The cheapest time to charge an EV moved to midday (Q4).** The cheapest hour moved from 03:00 or 04:00 in 2019 to 12:00 to 14:00 in 2025. Smart charging cut the wholesale cost by 67% to 74% in 7 zones.
 
-What it means and what to do about it: **[exec memo](docs/exec_memo.md)**.
+What these numbers mean, and what I would do about them: **[exec memo](docs/exec_memo.md)**.
 
 <details>
 <summary><b>All results by question</b> (charts, numbers, caveats)</summary>
@@ -76,16 +75,13 @@ All findings, with exact numbers and caveats: [`control-room/06 Findings/`](cont
 
 </details>
 
-## Questions
+## Why it matters
 
-| # | Question | Business output |
-|---|----------|-----------------|
-| Q1 | How often are prices negative, by zone and year? | Trend and zone ranking |
-| Q2 | Does solar cannibalise its own value? | Solar capture price and capture rate |
-| Q3 | Where should you build a battery? | Estimated €/MW/year arbitrage revenue by zone |
-| Q4 | When should EVs and fleets charge? | Cheapest charging windows by zone and season |
+When solar floods the grid at midday, wholesale prices fall to zero or below. A solar farm then earns least exactly when it produces most, while anyone who can shift demand, such as a battery or an EV that can wait, gets power for free or is even paid to take it. For anyone investing in solar, storage or charging in Europe, how often this happens and where changes the business case.
 
-## Architecture
+## How it works
+
+Every day a GitHub Actions job pulls the latest day-ahead prices, generation and load from the [ENTSO-E Transparency Platform](https://transparency.entsoe.eu/), where European grid operators publish their data. Python saves the raw data as Parquet. dbt then builds a DuckDB warehouse in three layers (staging, intermediate, marts), with tests at each step. A small linear program in `battery/` works out what an ideal battery would have earned each day. Finally the job exports the results as CSVs and rebuilds the dashboard on GitHub Pages. The four notebooks in `analysis/` answer one question each and draw the charts.
 
 ```
             ┌──────────── GitHub Actions, daily 12:30 UTC (refresh.yml) ────────────┐
@@ -96,7 +92,7 @@ ENTSO-E API ──► pipeline/ (Python) ──► data/raw (Parquet, kept in th
             │                     warehouse/ (DuckDB + dbt, tests)                  │
             │                     staging → intermediate → marts                    │
             │                                │                                      │
-            │                     models/ (battery LP) ──► battery.arbitrage_daily  │
+            │                     battery/ (LP) ──► battery.arbitrage_daily         │
             │                                │                                      │
             │               ┌────────────────┴────────────────┐                     │
             │               ▼                                 ▼                     │
@@ -107,11 +103,34 @@ ENTSO-E API ──► pipeline/ (Python) ──► data/raw (Parquet, kept in th
                     analysis/ (notebooks, docs/figures)   dashboard/ ──► GitHub Pages (pages.yml)
 ```
 
-## How to run
+## Validation
 
-You need [uv](https://docs.astral.sh/uv/) and a free ENTSO-E API token
-(create an account on the [Transparency Platform](https://transparency.entsoe.eu/), then request
-"Restful API access" by email; the token appears in your account settings once approved).
+I checked the results against official and published figures before relying on them.
+
+- **Negative hours:** my counts match published statistics exactly for Germany 2019 to 2024 and for France 2023 to 2025 (RTE). Spain 2025 is within one hour of pv-magazine's count.
+- **Solar value:** Germany's 2024 solar capture price matches the published German solar market value to within one cent (46.24). France's solar output on ENTSO-E is 6% below RTE's national figure, which I state wherever it matters.
+- **Battery revenue:** Germany 2024 is in the same order of magnitude as a published estimate for day-ahead trading alone (Gridcog).
+- **Automated checks:** dbt tests run on every model (uniqueness, value ranges, completeness, hourly against quarter-hour counts). A `pytest` check compares every number in this README, the finding notes and the exec memo with a frozen snapshot of the data in [`analysis/outputs/snapshots/`](analysis/outputs/snapshots/), so the text cannot drift away from the data.
+
+## Repo map
+
+| Folder | Purpose |
+|--------|---------|
+| `pipeline/` | Downloads prices, generation and load from ENTSO-E into Parquet |
+| `warehouse/` | dbt project on DuckDB: staging, intermediate and mart models, with tests |
+| `battery/` | Battery arbitrage model: one linear program per zone and day (Q3) |
+| `analysis/` | One notebook per question; `outputs/` holds the exported CSVs and frozen snapshots |
+| `dashboard/` | Static dashboard for GitHub Pages; `build_data.py` writes its data file |
+| `docs/` | [Exec memo](docs/exec_memo.md) and every chart as SVG and PNG (`docs/figures/`) |
+| `tests/` | Unit tests for the pipeline and the battery model, and the check of every quoted number |
+| `.github/workflows/` | Daily refresh and dashboard deployment |
+| `control-room/` | Project notes (an Obsidian vault): brief, roadmap, decision records, daily log, findings |
+
+## How to run it locally
+
+You need [uv](https://docs.astral.sh/uv/) and a free ENTSO-E API token. Create an account on the
+[Transparency Platform](https://transparency.entsoe.eu/), then ask for "Restful API access" by email;
+the token appears in your account settings once it is approved.
 
 ```bash
 git clone https://github.com/Sbaiii/negative-hours.git
@@ -154,7 +173,7 @@ Output is one Parquet file per dataset, zone and year, e.g.
 cd warehouse
 uv run dbt build --exclude source:battery+   # seed, models and tests → data/warehouse.duckdb
 cd ..
-uv run python -m battery.run          # battery LP for every zone-day (~3 min) → battery.arbitrage_daily
+uv run python -m battery.run                 # battery LP for every zone-day (~3 min) → battery.arbitrage_daily
 cd warehouse
 uv run dbt build --select source:battery+    # Q3 mart from the LP results
 uv run dbt docs generate    # then `uv run dbt docs serve` to browse model docs
@@ -170,23 +189,9 @@ uv run python dashboard/build_data.py      # → dashboard/data/dashboard.json
 python3 -m http.server 8000 --directory dashboard   # then open http://localhost:8000
 ```
 
-## Repo layout
+## Design decisions
 
-| Folder | What lives there |
-|--------|------------------|
-| `pipeline/` | Data extraction from the ENTSO-E Transparency Platform |
-| `warehouse/` | dbt project: models, tests, documentation |
-| `models/` | Python models: battery arbitrage linear program (Q3) |
-| `analysis/` | Notebooks answering Q1 to Q4, `outputs/` (CSVs and the frozen snapshots) |
-| `dashboard/` | Live dashboard: static page + `build_data.py` (writes `data/dashboard.json`) |
-| `tests/` | `pytest`: pipeline and model tests, and the check of every quoted number |
-| `.github/workflows/` | Daily refresh and dashboard deployment ([ADR-009](control-room/04%20Decisions/ADR-009%20Automated%20Daily%20Refresh.md)) |
-| `docs/` | [Exec memo](docs/exec_memo.md) and the charts used in the README and finding notes (`docs/figures/`, SVG and PNG) |
-| `control-room/` | Obsidian vault: project brief, roadmap, decision log, daily log |
-
-## Decisions
-
-Every non-trivial choice (tool, metric definition, scope cut) has a decision record in [`control-room/04 Decisions/`](control-room/04%20Decisions/):
+Every choice that changes a number (a metric definition, the scope, a model assumption) has a short decision record. The full list is in the [decision index](control-room/04%20Decisions/Decision%20Index.md).
 
 | ADR | Decision |
 |-----|----------|
@@ -194,27 +199,20 @@ Every non-trivial choice (tool, metric definition, scope cut) has a decision rec
 | [ADR-002](control-room/04%20Decisions/ADR-002%20Bidding%20Zones.md) | The 8 bidding zones: ES, PT, FR, DE_LU, NL, BE, PL, IT_NORD |
 | [ADR-003](control-room/04%20Decisions/ADR-003%20Raw%20Price%20Storage.md) | Raw data as Parquet per zone and UTC year |
 | [ADR-004](control-room/04%20Decisions/ADR-004%20Resolution%20Detection.md) | Price resolution (hourly or 15-minute) read from the data, never assumed |
-| [ADR-005](control-room/04%20Decisions/ADR-005%20Negative%20Hours%20Metric.md) | Negative hours: hours whose hourly mean price is below 0 (RTE and REE convention) |
+| [ADR-005](control-room/04%20Decisions/ADR-005%20Negative%20Hours%20Metric.md) | Negative hours: hours whose hourly mean price is below 0 (the RTE and REE convention) |
 | [ADR-006](control-room/04%20Decisions/ADR-006%20Hourly%20Grid%20and%20Capture%20Prices.md) | Solar and wind capture prices, matched on the generation period |
-| [ADR-007](control-room/04%20Decisions/ADR-007%20Battery%20Arbitrage%20Model.md) | Battery arbitrage: daily linear program with perfect foresight |
-| [ADR-008](control-room/04%20Decisions/ADR-008%20EV%20Charging%20Strategies.md) | EV charging strategies: at 18:00, overnight, smart |
+| [ADR-007](control-room/04%20Decisions/ADR-007%20Battery%20Arbitrage%20Model.md) | Battery arbitrage: a daily linear program with perfect foresight |
+| [ADR-008](control-room/04%20Decisions/ADR-008%20EV%20Charging%20Strategies.md) | EV charging: at 18:00, overnight, or in the cheapest hours |
 | [ADR-009](control-room/04%20Decisions/ADR-009%20Automated%20Daily%20Refresh.md) | Automated daily refresh and dashboard deployment |
-
-## Validation
-
-- **Negative hours match official statistics:** Germany 2019 to 2024 and France 2023 to 2025 exactly (published German counts, RTE), Spain 2025 within one hour of pv-magazine's count.
-- **Solar value:** Germany's 2024 solar capture price matches the published German solar market value to within one cent (46.24); France's solar output on ENTSO-E is checked against RTE's national figure.
-- **Battery revenue:** Germany 2024 is the same order of magnitude as a published day-ahead-only estimate (Gridcog).
-- **Automated checks:** dbt tests on every model (uniqueness, ranges, completeness, hourly vs quarter-hour counts), and `pytest` checks that every number in this README, the finding notes and the exec memo matches the frozen snapshot in [`analysis/outputs/snapshots/`](analysis/outputs/snapshots/).
 
 ## Caveats
 
-- **Generation is as reported to ENTSO-E.** It is below national statistics for France and far below for the Netherlands, so Dutch solar figures are indicative only.
-- **Day-ahead market only.** Battery revenue is an upper bound (perfect foresight, no intraday, balancing or capacity revenue, no costs). Not investment advice.
+- **Generation is as reported to ENTSO-E.** It is below national statistics for France and far below them for the Netherlands, so I treat Dutch solar figures as indicative only.
+- **Day-ahead market only.** Battery revenue is an upper bound for day-ahead trading: it assumes perfect foresight and leaves out intraday, balancing and capacity markets and all costs. It is not investment advice.
 - **Wholesale prices only.** EV costs exclude taxes, grid fees and retail margins, so they are not household bills.
-- **North Italy's price floor.** Its day-ahead market accepts no offers below 0 €/MWh, so it can never go negative.
-- **2026 is not over.** Its figures are compared only with the same dates of earlier years.
+- **North Italy has a price floor.** Its day-ahead market accepts no offers below 0 €/MWh, so its price can never go negative.
+- **2026 is not over.** I compare its figures only with the same dates of earlier years.
 
----
+## About me
 
-Built by [Abdellah Sbai](https://sbaiii.com) · [LinkedIn](https://www.linkedin.com/in/sbaiii/)
+Built by Abdellah Sbai. More of my work is on [sbaiii.com](https://sbaiii.com), and you can reach me on [LinkedIn](https://www.linkedin.com/in/sbaiii/).
